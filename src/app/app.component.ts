@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ProfilePage } from './pages/profile/profile.page';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: ` <div></div>`,
+  imports: [ProfilePage],
+  template: ` <app-profile></app-profile>`,
 })
 export class AppComponent {
   title = 'linkedin-like-project-v5';
