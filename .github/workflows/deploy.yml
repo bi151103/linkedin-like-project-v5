@@ -31,8 +31,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      # - name: Create 404 page for SPA fallback
-      #   run: cp ./index.html ./404.html
+      - name: Create 404 page for SPA fallback
+        run: cp ./index.html ./404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
