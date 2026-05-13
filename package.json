@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build && npm run build:compile-tw",
+    "build": "npm run build:compile-tw && ng build",
     "build:compile-tw": "npx @tailwindcss/cli -i ./src/styles.css -o ./dist/output.css",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
