@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist",
+            "outputPath": "linkedin-like-project-v5/dist",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -22,10 +22,10 @@
               {
                 "glob": "**/*",
                 "input": "src/assets",
-                "output": "assets"
+                "output": "linkedin-like-project-v5/assets"
               }
             ],
-            "styles": ["dist/output.css"],
+            "styles": ["linkedin-like-project-v5/dist/output.css"],
             "scripts": []
           },
           "configurations": {
