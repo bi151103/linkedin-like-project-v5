@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-header',
+  imports: [RouterLink],
   template: `
     <div class="w-50px h-3/5">
-      <a href="#">
+      <a routerLink="/">
         <img
           class="block aspect-square h-full justify-self-center"
           src="assets/images/icons8-profile-100.png"
@@ -24,7 +26,7 @@ import { Component } from '@angular/core';
       />
     </div>
     <div class="w-50px h-3/5">
-      <a href="#" class="relative">
+      <a routerLink="/message" class="relative">
         <img
           class="block aspect-square h-full justify-self-center"
           src="assets/images/icons8-chat-bubble-100.png"

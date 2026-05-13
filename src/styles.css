@@ -22,6 +22,9 @@
   --spacing-sm-img: 25px;
   --spacing-md-img: 50px;
   --spacing-sm-noti-bubble: 20px;
+  --radius-xl: 8px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
 }
 
 @layer base {
