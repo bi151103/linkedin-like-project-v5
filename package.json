@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "npm run build:compile-tw && ng build",
-    "build:compile-tw": "npx @tailwindcss/cli -i ./src/styles.css -o ./linkedin-like-project-v5/dist/output.css",
+    "build:compile-tw": "npx @tailwindcss/cli -i ./src/styles.css -o ./dist/linkedin-like-project-v5/output.css",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "dev:compile-tw": "npx @tailwindcss/cli -i ./src/styles.css -o ./dist/output.css --watch"
