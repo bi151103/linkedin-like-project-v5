@@ -25,7 +25,7 @@ import { RouterLink } from '@angular/router';
     </div>
     <div class="mt-40px *:mx-10px text-center">
       <a
-        routerLink=""
+        routerLink="/"
         class="py-10px bg-primary-bg hover:bg-primary-tx rounded-xl px-[10px] text-white hover:text-yellow-500"
       >
         Home
