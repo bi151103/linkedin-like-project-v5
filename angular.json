@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "linkedin-like-project-v5/dist",
+            "outputPath": "dist/linkedin-like-project-v5",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -22,14 +22,16 @@
               {
                 "glob": "**/*",
                 "input": "src/assets",
-                "output": "linkedin-like-project-v5/assets"
+                "output": "assets"
               }
             ],
-            "styles": ["linkedin-like-project-v5/dist/output.css"],
+            "styles": ["dist/linkedin-like-project-v5/output.css"],
             "scripts": []
           },
           "configurations": {
             "production": {
+              "baseHref": "/linkedin-like-project-v5/",
+              "deployUrl": "/linkedin-like-project-v5/",
               "budgets": [
                 {
                   "type": "initial",
@@ -79,7 +81,7 @@
                 "output": "assets"
               }
             ],
-            "styles": ["dist/output.css"],
+            "styles": ["dist/linkedin-like-project-v5/output.css"],
             "scripts": []
           }
         }
