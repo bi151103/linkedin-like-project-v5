@@ -129,7 +129,7 @@
 @utility plus-before {
   &::before {
     content: "";
-    background-image: url(./images/icons8-plus-100.png);
+    background-image: url(assets/images/icons8-plus-100.png);
     background-size: 100%;
     background-repeat: no-repeat;
     display: inline-block;
@@ -144,7 +144,7 @@
   &::after {
     content: "";
     display: inline-block;
-    background-image: url(./images/icons8-chevron-down-100.png);
+    background-image: url(assets/images/icons8-chevron-down-100.png);
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: bottom;
