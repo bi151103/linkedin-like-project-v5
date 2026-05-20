@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-not-found',
-  imports: [RouterLink],
-  template: `
+    selector: 'app-not-found',
+    imports: [RouterLink],
+    template: `
     <div class="px-15px flex h-[80px] items-center *:text-[calc(1vw+1.5rem)]">
       <a routerLink="/" class="h-50px">
         <img
@@ -40,9 +40,8 @@ import { RouterLink } from '@angular/router';
       </a>
     </div>
   `,
-  host: {
-    class: 'text-[16px] block',
-  },
-  standalone: true,
+    host: {
+        class: 'text-[16px] block',
+    }
 })
 export default class NotFoundPage {}

@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-header',
-  imports: [RouterLink],
-  template: `
+    selector: 'app-header',
+    imports: [RouterLink],
+    template: `
     <div class="w-50px h-3/5">
       <a routerLink="/">
         <img
@@ -38,10 +38,8 @@ import { RouterLink } from '@angular/router';
       </a>
     </div>
   `,
-  standalone: true,
-  host: {
-    class:
-      'h-50px border-separator-line fixed top-0 z-999 flex w-full items-center border-b bg-white',
-  },
+    host: {
+        class: 'h-50px border-separator-line fixed top-0 z-999 flex w-full items-center border-b bg-white',
+    }
 })
 export default class HeaderComponent {}

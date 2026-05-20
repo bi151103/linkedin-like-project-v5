@@ -9,8 +9,12 @@ export const routes: Routes = [
     title: 'Profile | LinkedIn',
   },
   {
-    path: '**',
+    path: 'not-found',
     component: NotFoundPage,
     title: 'LinkedIn',
+  },
+  {
+    path: '**',
+    redirectTo: 'not-found',
   },
 ];
