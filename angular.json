@@ -25,7 +25,7 @@
                 "output": "assets"
               }
             ],
-            "styles": ["dist/linkedin-like-project-v5/output.css"],
+            "styles": ["src/styles.css"],
             "scripts": []
           },
           "configurations": {
@@ -81,7 +81,7 @@
                 "output": "assets"
               }
             ],
-            "styles": ["dist/linkedin-like-project-v5/output.css"],
+            "styles": ["src/styles.css"],
             "scripts": []
           }
         }
