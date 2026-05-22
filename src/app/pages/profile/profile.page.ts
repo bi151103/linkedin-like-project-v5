@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import HeaderComponent from '../../components/header/header.component';
-import OverlayComponent from '../../components/overlay/overlay.component';
+import OverlayDirective from '../../components/overlay/overlay.component';
 import DialogComponent from '../../components/dialog/dialog.component';
 import SearchComboboxDialogComponent from '../../components/search-combobox-dialog/search-combobox-dialog.component';
 
@@ -8,17 +8,30 @@ import SearchComboboxDialogComponent from '../../components/search-combobox-dial
   selector: 'app-profile',
   imports: [
     HeaderComponent,
-    OverlayComponent,
+    OverlayDirective,
     DialogComponent,
     SearchComboboxDialogComponent,
   ],
   template: `
-    <app-header></app-header>
-    <app-overlay [hasBackdrop]="false">
-      <app-dialog [isVisible]="false">
+    <app-header
+      (onShowSearchComboboxDialog)="showSearchComboboxDialog()"
+    ></app-header>
+    <div appOverlay>
+      <app-dialog
+        [isVisible]="searchDialogVisible()"
+        (closeDialog)="hideSearchComboboxDialog()"
+      >
         <app-search-combobox-dialog></app-search-combobox-dialog>
       </app-dialog>
-    </app-overlay>
+    </div>
   `,
 })
-export class ProfilePage {}
+export class ProfilePage {
+  searchDialogVisible = signal(false);
+  showSearchComboboxDialog() {
+    this.searchDialogVisible.set(true);
+  }
+  hideSearchComboboxDialog() {
+    this.searchDialogVisible.set(false);
+  }
+}

@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-    selector: 'app-header',
-    imports: [RouterLink],
-    template: `
+  selector: 'app-header',
+  imports: [RouterLink],
+  template: `
     <div class="w-50px h-3/5">
       <a routerLink="/">
         <img
@@ -19,6 +19,7 @@ import { RouterLink } from '@angular/router';
         src="assets/images/icons8-search-100.png"
       />
       <input
+        (click)="onOpenSearchComboboxDialog()"
         type="text"
         name="search"
         class="pl-5px pr-10px text-medium pt-[4px] font-bold outline-none"
@@ -38,8 +39,15 @@ import { RouterLink } from '@angular/router';
       </a>
     </div>
   `,
-    host: {
-        class: 'h-50px border-separator-line fixed top-0 z-999 flex w-full items-center border-b bg-white',
-    }
+  host: {
+    class:
+      'h-50px border-separator-line fixed top-0 z-999 flex w-full items-center border-b bg-white',
+  },
 })
-export default class HeaderComponent {}
+export default class HeaderComponent {
+  onShowSearchComboboxDialog = output();
+
+  onOpenSearchComboboxDialog() {
+    this.onShowSearchComboboxDialog.emit();
+  }
+}

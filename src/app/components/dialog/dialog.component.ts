@@ -4,6 +4,7 @@ import {
   effect,
   inject,
   model,
+  output,
   viewChild,
 } from '@angular/core';
 import { CdkPortal } from '@angular/cdk/portal';
@@ -25,6 +26,7 @@ export default class DialogComponent {
   private overlayRef: Nullable<OverlayRef> = null;
   cdkPortal = viewChild.required(CdkPortal);
   isVisible = model(false);
+  closeDialog = output();
 
   constructor() {
     effect(() => {
@@ -49,6 +51,7 @@ export default class DialogComponent {
   detachDialog() {
     if (this.overlayRef) {
       this.overlayRef.detach();
+      this.closeDialog.emit();
     }
   }
 }
