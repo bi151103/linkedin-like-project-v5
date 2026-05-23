@@ -67,7 +67,7 @@ export class FooterItemComponent {
       switch (this.type()) {
         case 'home':
           this.navText.set('Home');
-          this.routeLink.set('/home');
+          this.routeLink.set('home');
           this.imgSrc.set('assets/images/icons8-home-100.png');
           break;
         case 'network':
