@@ -3,6 +3,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   model,
   output,
   viewChild,
@@ -27,6 +28,7 @@ export default class DialogComponent {
   cdkPortal = viewChild.required(CdkPortal);
   isVisible = model(false);
   closeDialog = output();
+  closableOnBackdropCLick = input(false);
 
   constructor() {
     effect(() => {
@@ -44,6 +46,12 @@ export default class DialogComponent {
     if (!this.overlayRef) {
       this.overlayRef =
         this.overlayComponent.overlayService.create(overlayConfig);
+
+      if (this.closableOnBackdropCLick()) {
+        this.overlayRef.backdropClick().subscribe(() => {
+          this.detachDialog();
+        });
+      }
     }
     this.overlayRef.attach<CdkPortal>(this.cdkPortal());
   }

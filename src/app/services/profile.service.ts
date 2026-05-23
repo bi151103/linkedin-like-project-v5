@@ -10,4 +10,16 @@ export default class ProfileService extends BaseService {
     const json = (await response.json()) as RecentSearchResponse;
     return json;
   }
+
+  async clearRecentSearch(recentSearch: string[]): Promise<void> {
+    const apiUrl = `${this.rootUrl}/remove-recent-search`;
+    const request = new Request(apiUrl, {
+      body: JSON.stringify(recentSearch),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    await fetch(request);
+  }
 }

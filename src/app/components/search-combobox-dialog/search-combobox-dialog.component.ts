@@ -6,16 +6,18 @@ import {
   inject,
   input,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import DialogComponent from '../dialog/dialog.component';
 import ProfileService from '../../services/profile.service';
 import { RecentSearchResponse } from '../../services/models';
 import { SvgIconComponent } from 'angular-svg-icon';
+import OverlayDirective from '../overlay/overlay.component';
 
 @Component({
   selector: 'app-search-combobox-dialog',
-  imports: [SvgIconComponent],
+  imports: [SvgIconComponent, OverlayDirective, DialogComponent],
   template: `
     <ng-container>
       <div class="h-50px flex items-center">
@@ -37,7 +39,9 @@ import { SvgIconComponent } from 'angular-svg-icon';
       <div class="p-15px flex justify-between">
         <h3 class="text-emphasis-tx font-medium">Recent search</h3>
         @if (recentSearch && recentSearch.length > 0) {
-          <button class="px-10px">Clear</button>
+          <button (click)="clearSearchDialogVisible.set(true)" class="px-10px">
+            Clear
+          </button>
         }
       </div>
       <ul class="mt-10px">
@@ -56,13 +60,38 @@ import { SvgIconComponent } from 'angular-svg-icon';
       @if (!recentSearch || (recentSearch && recentSearch.length === 0)) {
         <div class="py-20px m-auto max-h-[100px] w-full text-center">
           <img
-            src="/assets/images/icons8-empty-100.png"
+            src="assets/images/icons8-empty-100.png"
             class="w-md-img h-md-img"
           />
           <p class="text-medium-bold mt-5px text-3xl">Nothing here yet</p>
         </div>
       }
     </ng-container>
+    <div appOverlay [hasBackdrop]="true">
+      <app-dialog
+        [isVisible]="clearSearchDialogVisible()"
+        (closeDialog)="clearSearchDialogVisible.set(false)"
+        [closableOnBackdropCLick]="true"
+      >
+        <div
+          class="p-24px fixed top-0 right-0 bottom-0 left-0 z-1003 m-auto h-min max-h-[70vh] w-[70vw] min-w-[300px] overflow-y-auto rounded-[8px] bg-white"
+        >
+          <h1 class="text-emphasis-tx font-medium">Clear history?</h1>
+          <p class="mt-10px text-medium text-emphasis-tx">
+            Your search history is only visible to you, and it helps us to show
+            you better results. Are you sure you want to clear it?
+          </p>
+          <div
+            class="mt-15px *:h:[48px] text-medium flex justify-end *:inline-block *:px-[24px] *:py-[12px] *:text-inherit"
+          >
+            <button (click)="clearSearchDialogVisible.set(false)">
+              Cancel
+            </button>
+            <button (click)="onContinue()">Continue</button>
+          </div>
+        </div>
+      </app-dialog>
+    </div>
   `,
   host: {
     class: 'h-screen w-screen bg-white',
@@ -74,6 +103,7 @@ export default class SearchComboboxDialogComponent {
   closeDialogOutput = output<boolean>();
   profileService = inject(ProfileService);
   recentSearch: string[] = [];
+  clearSearchDialogVisible = signal(false);
 
   constructor() {
     effect(() => {
@@ -89,5 +119,11 @@ export default class SearchComboboxDialogComponent {
   onCloseDialog() {
     this.dialogComponent.isVisible.set(false);
     this.closeDialogOutput.emit(true);
+  }
+
+  async onContinue() {
+    await this.profileService.clearRecentSearch(this.recentSearch);
+    this.recentSearch = [];
+    this.clearSearchDialogVisible.set(false);
   }
 }

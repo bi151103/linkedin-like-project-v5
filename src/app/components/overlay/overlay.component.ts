@@ -19,11 +19,13 @@ export default class OverlayDirective {
 
   position = input<PositionStrategy>(this.overlayService.position().global());
   hasBackdrop = input(false);
+  backdropClassAddOns = 'bg-[rgba(0,0,0,0.6)]';
 
   config = computed(() => {
     const overlayConfig: OverlayConfig = {
       hasBackdrop: this.hasBackdrop(),
       positionStrategy: this.position(),
+      backdropClass: this.backdropClassAddOns,
     };
     return overlayConfig;
   });
