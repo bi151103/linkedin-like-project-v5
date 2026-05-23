@@ -45,7 +45,7 @@ import OverlayDirective from '../overlay/overlay.component';
         }
       </div>
       <ul class="mt-10px">
-        @for (item of recentSearch; track item) {
+        @for (item of recentSearch.slice(0, 5); track item) {
           <li
             class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
           >
