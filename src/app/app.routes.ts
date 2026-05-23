@@ -12,7 +12,7 @@ export const routes: Routes = [
   {
     path: 'edit-profile',
     component: EditProfilePage,
-    title: 'Profile | LinkedIn',
+    title: 'Edit Intro | LinkedIn',
   },
   {
     path: 'not-found',

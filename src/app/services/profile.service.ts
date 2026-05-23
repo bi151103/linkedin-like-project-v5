@@ -9,6 +9,7 @@ import { GeneralNotification } from './models/general-notification';
 import { MessageNotificationResponse } from './models/message-notification-response';
 import { NetworkNotificationResponse } from './models/network-notification-response';
 import { GeneralNotificationResponse } from './models/general-notification-response';
+import { EducationResponse } from './models/education-response';
 
 @Injectable({ providedIn: 'root' })
 export default class ProfileService extends BaseService {
@@ -63,6 +64,13 @@ export default class ProfileService extends BaseService {
     const apiUrl = `${this.rootUrl}/notifications/general`;
     const response = await fetch(apiUrl);
     const json = (await response.json()) as GeneralNotificationResponse;
+    return json;
+  }
+
+  async getEducations(): Promise<EducationResponse> {
+    const apiUrl = `${this.rootUrl}/educations`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as EducationResponse;
     return json;
   }
 }
