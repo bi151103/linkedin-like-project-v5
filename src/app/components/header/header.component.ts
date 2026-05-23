@@ -1,9 +1,12 @@
-import { Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { MessageNotification } from '../../services/models/message-notification';
+import { Optional } from '../../models';
+import { BubbleDirective } from '../../directives/bubble.directive';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink],
+  imports: [RouterLink, BubbleDirective],
   template: `
     <ng-container>
       <div class="min-w-50px basis-50px h-3/5">
@@ -38,10 +41,9 @@ import { RouterLink } from '@angular/router';
             class="aspect-square h-full"
             src="assets/images/icons8-chat-bubble-100.png"
           />
-          <img
-            src="assets/images/icons8-circled-1-100.png"
-            class="w-sm-noti-bubble h-sm-noti-bubble absolute top-0 right-[2px] rounded-full border border-double border-white"
-          />
+          <span appBubble adjustedRightPositionClass="right-5px">{{
+            messageNotifications()?.length
+          }}</span>
         </a>
       </div>
     </ng-container>
@@ -53,6 +55,7 @@ import { RouterLink } from '@angular/router';
 })
 export default class HeaderComponent {
   onShowSearchComboboxDialog = output();
+  messageNotifications = input<Optional<MessageNotification[]>>([]);
 
   onOpenSearchComboboxDialog() {
     this.onShowSearchComboboxDialog.emit();

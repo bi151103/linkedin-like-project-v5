@@ -7,23 +7,16 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NetworkNotification } from '../../services/models/network-notification';
+import { GeneralNotification } from '../../services/models/general-notification';
+import { Optional } from '../../models';
+import { BubbleDirective } from '../../directives/bubble.directive';
 
 export type navType = 'home' | 'network' | 'post' | 'noti' | 'job';
 
-@Directive({
-  selector: 'img[appBubble]',
-  host: {
-    class: 'w-sm-noti-bubble h-sm-noti-bubble absolute top-0 right-10px',
-    '[src]': 'imgSrc()',
-  },
-})
-export class BubbleImageDirective {
-  imgSrc = input.required();
-}
-
 @Component({
   selector: 'li[appFooterItem]',
-  imports: [RouterLink, BubbleImageDirective],
+  imports: [RouterLink, BubbleDirective],
   template: `
     <ng-container>
       <a
@@ -33,19 +26,16 @@ export class BubbleImageDirective {
         <img class="w-sm-img h-sm-img align-middle" src="{{ imgSrc() }}" />
         @switch (type()) {
           @case ('home') {
-            <img appBubble [imgSrc]="'assets/images/icons8-circle-100.png'" />
+            <img
+              src="assets/images/icons8-circle-100.png"
+              class="right-15px h-20px w-20px absolute top-0"
+            />
           }
           @case ('network') {
-            <img
-              appBubble
-              [imgSrc]="'assets/images/icons8-circled-1-100.png'"
-            />
+            <span appBubble>{{ networkNotificationsCount() }}</span>
           }
           @case ('noti') {
-            <img
-              appBubble
-              [imgSrc]="'assets/images/icons8-circled-5-100.png'"
-            />
+            <span appBubble>{{ generalNotificationsCount() }}</span>
           }
         }
         <p>{{ navText() }}</p>
@@ -58,6 +48,8 @@ export class BubbleImageDirective {
 })
 export class FooterItemComponent {
   type = input.required<navType>();
+  generalNotificationsCount = input<Optional<number>>(0);
+  networkNotificationsCount = input<Optional<number>>(0);
 
   navText = signal('Home');
   routeLink = signal('');
@@ -104,9 +96,17 @@ export class FooterItemComponent {
       <nav class="h-full w-full">
         <ul class="flex h-full w-full items-center justify-center">
           <li appFooterItem [type]="'home'"></li>
-          <li appFooterItem [type]="'network'"></li>
+          <li
+            appFooterItem
+            [type]="'network'"
+            [networkNotificationsCount]="networkNotifications()?.length"
+          ></li>
           <li appFooterItem [type]="'post'"></li>
-          <li appFooterItem [type]="'noti'"></li>
+          <li
+            appFooterItem
+            [type]="'noti'"
+            [generalNotificationsCount]="generalNotifications()?.length"
+          ></li>
           <li appFooterItem [type]="'job'"></li>
         </ul>
       </nav>
@@ -117,4 +117,7 @@ export class FooterItemComponent {
       'block h-50px border-separator-line fixed bottom-0 z-999 w-full border-t bg-white',
   },
 })
-export default class FooterComponent {}
+export default class FooterComponent {
+  networkNotifications = input<Optional<NetworkNotification[]>>([]);
+  generalNotifications = input<Optional<GeneralNotification[]>>([]);
+}

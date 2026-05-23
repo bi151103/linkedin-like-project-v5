@@ -18,7 +18,9 @@ import { Nullable } from '../../models';
 import ProfileNamePipe from '../../pipes/profile-name.pipe';
 import ProfileService from '../../services/profile.service';
 import { ExperienceData } from '../../services/models/experience-data';
-import { ConnectionResponse } from '../../services/models/connection-response';
+import { MessageNotificationResponse } from '../../services/models/message-notification-response';
+import { NetworkNotificationResponse } from '../../services/models/network-notification-response';
+import { GeneralNotificationResponse } from '../../services/models/general-notification-response';
 
 @Component({
   selector: 'app-profile',
@@ -33,6 +35,7 @@ import { ConnectionResponse } from '../../services/models/connection-response';
   ],
   template: `
     <app-header
+      [messageNotifications]="messageNotifications()?.data"
       (onShowSearchComboboxDialog)="showSearchComboboxDialog()"
     ></app-header>
     <ng-container>
@@ -101,7 +104,24 @@ import { ConnectionResponse } from '../../services/models/connection-response';
         </p>
       </section>
     </ng-container>
-    <app-footer></app-footer>
+    <ng-container>
+      <section class="mt-10px p-15px bg-white">
+        <div class="flex">
+          <h2>About</h2>
+          <a routerLink="about" class="ml-auto">
+            <img
+              class="h-sm-img w-sm-img"
+              src="assets/images/icons8-edit-100.png"
+            />
+          </a>
+        </div>
+        <p class="mt-10px">As early of 2026</p>
+      </section>
+    </ng-container>
+    <app-footer
+      [generalNotifications]="generalNotifications()?.data"
+      [networkNotifications]="networkNotifications()?.data"
+    ></app-footer>
     <div appOverlay>
       <app-dialog
         [isVisible]="searchDialogVisible()"
@@ -124,6 +144,9 @@ export class ProfilePage {
   connectionCount = signal<number>(0);
   recentCompanyExp = signal('');
   shareProfileBtn = viewChild.required<ElementRef<HTMLElement>>('shareBtn');
+  messageNotifications = signal<Nullable<MessageNotificationResponse>>(null);
+  networkNotifications = signal<Nullable<NetworkNotificationResponse>>(null);
+  generalNotifications = signal<Nullable<GeneralNotificationResponse>>(null);
 
   constructor() {
     this.userInfoService.getUserInfo().then((data) => {
@@ -141,6 +164,15 @@ export class ProfilePage {
     });
     this.profileService.getConnections().then((data) => {
       this.connectionCount.set(data.count);
+    });
+    this.profileService.getMessageNotifications().then((data) => {
+      this.messageNotifications.set(data);
+    });
+    this.profileService.getNetworkNotifications().then((data) => {
+      this.networkNotifications.set(data);
+    });
+    this.profileService.getGeneralNotifications().then((data) => {
+      this.generalNotifications.set(data);
     });
   }
 

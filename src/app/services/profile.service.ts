@@ -3,6 +3,12 @@ import BaseService from './base-service';
 import { RecentSearchResponse } from './models';
 import { ExperienceData } from './models/experience-data';
 import { ConnectionResponse } from './models/connection-response';
+import { MessageNotification } from './models/message-notification';
+import { NetworkNotification } from './models/network-notification';
+import { GeneralNotification } from './models/general-notification';
+import { MessageNotificationResponse } from './models/message-notification-response';
+import { NetworkNotificationResponse } from './models/network-notification-response';
+import { GeneralNotificationResponse } from './models/general-notification-response';
 
 @Injectable({ providedIn: 'root' })
 export default class ProfileService extends BaseService {
@@ -36,6 +42,27 @@ export default class ProfileService extends BaseService {
     const apiUrl = `${this.rootUrl}/connections`;
     const response = await fetch(apiUrl);
     const json = (await response.json()) as ConnectionResponse;
+    return json;
+  }
+
+  async getMessageNotifications(): Promise<MessageNotificationResponse> {
+    const apiUrl = `${this.rootUrl}/notifications/messages`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as MessageNotificationResponse;
+    return json;
+  }
+
+  async getNetworkNotifications(): Promise<NetworkNotificationResponse> {
+    const apiUrl = `${this.rootUrl}/notifications/network`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as NetworkNotificationResponse;
+    return json;
+  }
+
+  async getGeneralNotifications(): Promise<GeneralNotificationResponse> {
+    const apiUrl = `${this.rootUrl}/notifications/general`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as GeneralNotificationResponse;
     return json;
   }
 }
