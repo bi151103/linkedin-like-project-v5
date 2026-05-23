@@ -3,6 +3,7 @@ import HeaderComponent from '../../components/header/header.component';
 import OverlayDirective from '../../components/overlay/overlay.component';
 import DialogComponent from '../../components/dialog/dialog.component';
 import SearchComboboxDialogComponent from '../../components/search-combobox-dialog/search-combobox-dialog.component';
+import FooterComponent from '../../components/footer/footer.component';
 
 @Component({
   selector: 'app-profile',
@@ -11,11 +12,13 @@ import SearchComboboxDialogComponent from '../../components/search-combobox-dial
     OverlayDirective,
     DialogComponent,
     SearchComboboxDialogComponent,
+    FooterComponent,
   ],
   template: `
     <app-header
       (onShowSearchComboboxDialog)="showSearchComboboxDialog()"
     ></app-header>
+    <app-footer></app-footer>
     <div appOverlay>
       <app-dialog
         [isVisible]="searchDialogVisible()"
