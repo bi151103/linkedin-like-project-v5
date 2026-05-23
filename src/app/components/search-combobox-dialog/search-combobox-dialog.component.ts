@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import DialogComponent from '../dialog/dialog.component';
 import ProfileService from '../../services/profile.service';
-import { RecentSearchResponse } from '../../services/models';
 import { SvgIconComponent } from 'angular-svg-icon';
 import OverlayDirective from '../overlay/overlay.component';
 
@@ -38,14 +37,14 @@ import OverlayDirective from '../overlay/overlay.component';
       </div>
       <div class="p-15px flex justify-between">
         <h3 class="text-emphasis-tx font-medium">Recent search</h3>
-        @if (recentSearch && recentSearch.length > 0) {
+        @if (recentSearch() && recentSearch().length > 0) {
           <button (click)="clearSearchDialogVisible.set(true)" class="px-10px">
             Clear
           </button>
         }
       </div>
       <ul class="mt-10px">
-        @for (item of recentSearch.slice(0, 5); track item) {
+        @for (item of recentSearch().slice(0, 5); track item) {
           <li
             class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
           >
@@ -57,7 +56,7 @@ import OverlayDirective from '../overlay/overlay.component';
           </li>
         }
       </ul>
-      @if (!recentSearch || (recentSearch && recentSearch.length === 0)) {
+      @if (!recentSearch() || (recentSearch() && recentSearch().length === 0)) {
         <div class="py-20px m-auto max-h-[100px] w-full text-center">
           <img
             src="assets/images/icons8-empty-100.png"
@@ -102,7 +101,7 @@ export default class SearchComboboxDialogComponent {
   searchInput = viewChild.required<ElementRef<HTMLElement>>('searchInput');
   closeDialogOutput = output<boolean>();
   profileService = inject(ProfileService);
-  recentSearch: string[] = [];
+  recentSearch = signal<string[]>([]);
   clearSearchDialogVisible = signal(false);
 
   constructor() {
@@ -110,7 +109,7 @@ export default class SearchComboboxDialogComponent {
       if (this.dialogComponent.isVisible()) {
         this.searchInput().nativeElement.focus();
         this.profileService.getRecentSearch().then((data) => {
-          this.recentSearch = data.data;
+          this.recentSearch.set(data.data);
         });
       }
     });
@@ -122,8 +121,8 @@ export default class SearchComboboxDialogComponent {
   }
 
   async onContinue() {
-    await this.profileService.clearRecentSearch(this.recentSearch);
-    this.recentSearch = [];
+    await this.profileService.clearRecentSearch(this.recentSearch());
+    this.recentSearch.set([]);
     this.clearSearchDialogVisible.set(false);
   }
 }

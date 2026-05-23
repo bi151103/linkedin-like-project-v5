@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import BaseService from './base-service';
 import { RecentSearchResponse } from './models';
+import { ExperienceData } from './models/experience-data';
+import { ConnectionResponse } from './models/connection-response';
 
 @Injectable({ providedIn: 'root' })
 export default class ProfileService extends BaseService {
@@ -21,5 +23,19 @@ export default class ProfileService extends BaseService {
       },
     });
     await fetch(request);
+  }
+
+  async getExperiences(): Promise<ExperienceData[]> {
+    const apiUrl = `${this.rootUrl}/experiences`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as ExperienceData[];
+    return json;
+  }
+
+  async getConnections(): Promise<ConnectionResponse> {
+    const apiUrl = `${this.rootUrl}/connections`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as ConnectionResponse;
+    return json;
   }
 }
