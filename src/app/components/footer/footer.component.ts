@@ -32,10 +32,14 @@ export type navType = 'home' | 'network' | 'post' | 'noti' | 'job';
             />
           }
           @case ('network') {
-            <span appBubble>{{ networkNotificationsCount() }}</span>
+            @if (networkNotificationsCount()) {
+              <span appBubble>{{ networkNotificationsCount() }}</span>
+            }
           }
           @case ('noti') {
-            <span appBubble>{{ generalNotificationsCount() }}</span>
+            @if (generalNotificationsCount()) {
+              <span appBubble>{{ generalNotificationsCount() }}</span>
+            }
           }
         }
         <p>{{ navText() }}</p>

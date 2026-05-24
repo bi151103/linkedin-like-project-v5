@@ -41,9 +41,11 @@ import { BubbleDirective } from '../../directives/bubble.directive';
             class="aspect-square h-full"
             src="assets/images/icons8-chat-bubble-100.png"
           />
-          <span appBubble adjustedRightPositionClass="right-5px">{{
-            messageNotifications()?.length
-          }}</span>
+          @if (messageNotifications()) {
+            <span appBubble adjustedRightPositionClass="right-5px">{{
+              messageNotifications()?.length
+            }}</span>
+          }
         </a>
       </div>
     </ng-container>
