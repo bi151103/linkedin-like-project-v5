@@ -1,10 +1,12 @@
 import {
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
   input,
   model,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -41,6 +43,9 @@ export type fieldType =
       <div
         #inputContainer
         class="relative rounded-[4px] border-[1.5px] border-[rgba(0,0,0,0.6)]"
+        #educationDropdownBtn="cdkOverlayOrigin"
+        cdkOverlayOrigin
+        (click)="isEducationDropdownOpen.set(!isEducationDropdownOpen())"
       >
         <input
           [(ngModel)]="inputValue"
@@ -48,21 +53,20 @@ export type fieldType =
           autocomplete="off"
           type="text"
           class="text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full"
-          value="{{ inputValue() }}"
           (blur)="lossFocus.set(true)"
-          (input)="lossFocus.set(false)"
+          (focus)="lossFocus.set(false)"
+          (input)="onInput()"
+          [name]="type()"
         />
         <label
           #label
           class="text-low-emphasis-tx top-5px left-15px absolute duration-[0.1s]"
+          (click)="onLabelClick()"
           >{{ labelText() }}</label
         >
         @if (type() === 'education') {
           <button
-            #educationDropdownBtn="cdkOverlayOrigin"
             class="right-15px absolute top-0 bottom-0"
-            cdkOverlayOrigin
-            (click)="isEducationDropdownOpen.set(!isEducationDropdownOpen())"
             appFloatingButtonInput
             floatingType="dropdown"
           ></button>
@@ -71,9 +75,11 @@ export type fieldType =
             [cdkConnectedOverlayOpen]="isEducationDropdownOpen()"
             [cdkConnectedOverlayOrigin]="educationDropdownBtn"
             (overlayOutsideClick)="isEducationDropdownOpen.set(false)"
+            [cdkConnectedOverlayHasBackdrop]="true"
+            [cdkConnectedOverlayBackdropClass]="'bg-transparent'"
           >
             <div
-              class="text-small px-15px py-20px border-separator-line max-h-[300px] w-[250px] rounded-[4px] border bg-white shadow-2xl"
+              class="text-small px-15px py-20px border-separator-line block max-h-[300px] w-[250px] rounded-[4px] border bg-white shadow-2xl"
             >
               <ul>
                 @for (education of educationList(); track education.id) {
@@ -81,12 +87,12 @@ export type fieldType =
                     [class]="
                       [
                         'not-first:mt-15px rounded-[2px] p-[2px]',
-                        education.institution.id === selectedEducationId()
+                        education.id === selectedEducationId()
                           ? 'bg-gray-200'
                           : '',
                       ] | twMerge
                     "
-                    (click)="selectedEducationId.set(education.institution.id)"
+                    (click)="onDropdownSelect(education)"
                   >
                     {{ education.institution.educationName }}
                   </li>
@@ -119,8 +125,9 @@ export type fieldType =
   host: { class: 'block not-first:mt-10px' },
 })
 export default class ProfileInputComponent {
+  _console = console;
   userInfoService = inject(UserInfoService);
-  inputValue = model<Optional<string>>('');
+  inputValue = model.required<string>();
   inputContainerEle =
     viewChild.required<ElementRef<HTMLElement>>('inputContainer');
   labelEle = viewChild.required<ElementRef<HTMLLabelElement>>('label');
@@ -130,28 +137,30 @@ export default class ProfileInputComponent {
   isRequired = input(false);
   clearable = input<boolean>();
   errorMsgText = signal<string>('');
-  lossFocus = signal(false);
+  lossFocus = signal(true);
   isEducationDropdownOpen = signal(false);
   educationList = input<Education[]>([]);
-  currentEducation = signal<
-    Optional<{
-      id: string;
-      institution: {
-        id: string;
-        educationName: string;
-        educationLogoSrc: string;
-      };
-    }>
-  >(undefined);
+  currentEducation = signal<Optional<Education>>(undefined);
   selectedEducationId = model<Optional<string>>(undefined);
+  isDirty = signal(false);
+  dirty = output();
+  isValid = signal(false);
+  valid = output();
+
+  onDirty() {
+    this.dirty.emit();
+    if (this.isValid()) {
+      this.valid.emit();
+    }
+  }
 
   constructor() {
     this.userInfoService.getUserInfo().then((data) => {
       this.currentEducation.set(data.education);
-      this.selectedEducationId.set(this.currentEducation()?.institution.id);
+      this.selectedEducationId.set(this.currentEducation()?.id);
     });
     effect(() => {
-      if (this.inputValue()) {
+      if (this.inputValue() || (!this.lossFocus() && !this.inputValue())) {
         this.labelEle().nativeElement.classList.add('text-xs-small');
         this.labelEle().nativeElement.classList.remove(
           'text-medium',
@@ -199,12 +208,36 @@ export default class ProfileInputComponent {
           break;
         default:
       }
+      this.isValid.set(
+        !this.isRequired() || (this.isRequired() && !!this.inputValue()),
+      );
     });
   }
 
+  onLabelClick() {
+    this.lossFocus.set(false);
+    this.inputEleRef().nativeElement.focus();
+  }
+
   clearInput() {
+    this.isDirty.set(true);
+    this.onDirty();
     this.lossFocus.set(false);
     this.inputEleRef().nativeElement.focus();
     this.inputValue.set('');
+  }
+
+  onInput() {
+    this.isDirty.set(true);
+    this.onDirty();
+  }
+
+  onDropdownSelect(selected: Education) {
+    if (selected.id !== this.selectedEducationId()) {
+      this.selectedEducationId.set(selected.id);
+      this.inputValue.set(selected.institution.educationName);
+      this.isDirty.set(true);
+      this.onDirty();
+    }
   }
 }

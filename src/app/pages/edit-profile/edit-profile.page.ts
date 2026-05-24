@@ -1,61 +1,89 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import UserInfoService from '../../services/user-info.service';
-import { Nullable, Optional } from '../../models';
+import { Nullable } from '../../models';
 import { UserInfo } from '../../services/models/user-info';
 import ButtonComponent from '../../components/button/button.component';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import ProfileInputComponent from '../../components/profile-input/profile-input.component';
 import ProfileService from '../../services/profile.service';
 import { Education } from '../../services/models/education';
+import UserService from '../../services/user.service';
+import OverlayDirective from '../../components/overlay/overlay.component';
+import DialogComponent from '../../components/dialog/dialog.component';
 
 @Component({
   selector: 'app-edit-profile',
-  imports: [ButtonComponent, RouterLink, ProfileInputComponent],
+  imports: [
+    ButtonComponent,
+    RouterLink,
+    ProfileInputComponent,
+    OverlayDirective,
+    DialogComponent,
+  ],
   template: `
     <ng-container>
       <div
         class="h-50px border-separator-line fixed top-0 flex w-full items-center border-b bg-white"
       >
-        <button appButton routerLink="/"></button>
+        <button appButton (click)="onLeaveForm()"></button>
         <h1 class="text-emphasis-tx px-15px">Edit Intro</h1>
         <button
-          disabled
+          [disabled]="!isFormValid() || !isDirty()"
           class="min-w-50px px-15px disabled:text-disabled-tx ml-auto text-inherit"
+          (click)="saveProfileChanges()"
         >
           Save
         </button>
       </div>
-      <div class="px-15px py-10px bg-white">
+      <form class="px-15px py-10px bg-white" (submit)="$event.preventDefault()">
         <app-profile-input
           type="firstName"
-          [inputValue]="userInfo()?.firstName"
+          [inputValue]="userInfo()?.firstName ?? ''"
           [isRequired]="true"
           [clearable]="true"
+          #firstName
+          (dirty)="isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="lastName"
-          [inputValue]="userInfo()?.lastName"
+          [inputValue]="userInfo()?.lastName ?? ''"
           [isRequired]="true"
           [clearable]="true"
+          #lastName
+          (dirty)="isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="headline"
-          [inputValue]="userInfo()?.headline"
+          [inputValue]="userInfo()?.headline ?? ''"
           [clearable]="true"
+          (dirty)="isDirty.set(true)"
+          #headline
         ></app-profile-input>
         <app-profile-input
           type="education"
-          [inputValue]="userInfo()?.education?.institution?.educationName"
+          [inputValue]="userInfo()?.education?.institution?.educationName ?? ''"
           [isRequired]="true"
           [educationList]="educationList()"
+          #education
+          (dirty)="isDirty.set(true)"
         ></app-profile-input>
         <div class="mt-10px px-5px flex items-center">
           <input
             id="education-check"
             class="h-[2rem] w-[2rem] align-middle"
             type="checkbox"
-            name="education"
+            name="educationShow"
+            (change)="isDirty.set(true)"
             [checked]="userInfo()?.showEducation"
+            #educationShow
           />
           <label class="ml-10px text-emphasis-tx" for="education-check"
             >Show education in my intro</label
@@ -63,21 +91,53 @@ import { Education } from '../../services/models/education';
         </div>
         <app-profile-input
           type="industry"
-          [inputValue]="userInfo()?.industry"
+          [inputValue]="userInfo()?.industry ?? ''"
           [isRequired]="true"
           [clearable]="true"
+          #industry
+          (dirty)="isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="country"
-          [inputValue]="userInfo()?.country"
+          [inputValue]="userInfo()?.country ?? ''"
           [isRequired]="true"
           [clearable]="true"
+          #country
+          (dirty)="isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="location"
-          [inputValue]="userInfo()?.location"
+          [inputValue]="userInfo()?.location ?? ''"
           [clearable]="true"
+          #location
+          (dirty)="isDirty.set(true)"
         ></app-profile-input>
+      </form>
+    </ng-container>
+    <ng-container>
+      <div appOverlay [hasBackdrop]="true">
+        <app-dialog
+          [isVisible]="confirmOnLeavingDialogVisible()"
+          (closeDialog)="confirmOnLeavingDialogVisible.set(false)"
+          [closableOnBackdropCLick]="true"
+        >
+          <div
+            class="p-24px fixed top-0 right-0 bottom-0 left-0 z-1003 m-auto h-min max-h-[70vh] w-[70vw] min-w-[300px] overflow-y-auto rounded-[8px] bg-white"
+          >
+            <h1 class="text-emphasis-tx font-medium">Leaving?</h1>
+            <p class="mt-10px text-medium text-emphasis-tx">
+              Are you sure to discard the changes?
+            </p>
+            <div
+              class="mt-15px *:h:[48px] text-medium flex justify-end *:inline-block *:px-[24px] *:py-[12px] *:text-inherit"
+            >
+              <button (click)="confirmOnLeavingDialogVisible.set(false)">
+                Stay
+              </button>
+              <button routerLink="/">Leave</button>
+            </div>
+          </div>
+        </app-dialog>
       </div>
     </ng-container>
   `,
@@ -87,16 +147,66 @@ import { Education } from '../../services/models/education';
 })
 export default class EditProfilePage {
   userInfoService = inject(UserInfoService);
+  userService = inject(UserService);
   profileService = inject(ProfileService);
   userInfo = signal<Nullable<UserInfo>>(null);
   educationList = signal<Education[]>([]);
+  isDirty = signal(false);
+  isFormValid = signal(false);
+  confirmOnLeavingDialogVisible = signal(false);
+  router = inject(Router);
+
+  firstNameInput = viewChild.required<ProfileInputComponent>('firstName');
+  lastNameInput = viewChild.required<ProfileInputComponent>('lastName');
+  headlineInput = viewChild.required<ProfileInputComponent>('headline');
+  educationInput = viewChild.required<ProfileInputComponent>('education');
+  educationShowInput =
+    viewChild.required<ElementRef<HTMLInputElement>>('educationShow');
+  industryInput = viewChild.required<ProfileInputComponent>('industry');
+  countryInput = viewChild.required<ProfileInputComponent>('country');
+  locationInput = viewChild.required<ProfileInputComponent>('location');
 
   constructor() {
+    effect(() => {
+      this.isFormValid.set(
+        this.firstNameInput().isValid() &&
+          this.lastNameInput().isValid() &&
+          this.educationInput().isValid() &&
+          this.industryInput().isValid() &&
+          this.countryInput().isValid() &&
+          this.locationInput().isValid(),
+      );
+    });
     this.userInfoService.getUserInfo().then((data) => {
       this.userInfo.set(data);
     });
     this.profileService.getEducations().then((data) => {
       this.educationList.set(data.data);
     });
+  }
+
+  async saveProfileChanges() {
+    const userInfo: UserInfo = {
+      firstName: this.firstNameInput().inputValue(),
+      lastName: this.lastNameInput().inputValue(),
+      headline: this.headlineInput().inputValue(),
+      education: this.educationList().filter(
+        (item) => item.id === this.educationInput().selectedEducationId(),
+      )[0],
+      showEducation: this.educationShowInput().nativeElement.checked,
+      industry: this.industryInput().inputValue(),
+      country: this.countryInput().inputValue(),
+      location: this.locationInput().inputValue(),
+    };
+
+    await this.userService.updateUserInfo(userInfo);
+  }
+
+  onLeaveForm() {
+    if (this.isDirty()) {
+      this.confirmOnLeavingDialogVisible.set(true);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 }
