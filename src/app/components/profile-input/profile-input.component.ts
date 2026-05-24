@@ -12,11 +12,10 @@ import { Optional } from '../../models';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CdkOverlayOrigin, CdkConnectedOverlay } from '@angular/cdk/overlay';
-import DialogComponent from '../dialog/dialog.component';
-import OverlayDirective from '../overlay/overlay.component';
 import { Education } from '../../services/models/education';
 import UserInfoService from '../../services/user-info.service';
 import TwMergePipe from '../../directives/tw-merge.directive';
+import FloatingButtonInputComponent from '../../directives/floating-button-input.component';
 
 export type fieldType =
   | 'firstName'
@@ -35,6 +34,7 @@ export type fieldType =
     CdkOverlayOrigin,
     CdkConnectedOverlay,
     TwMergePipe,
+    FloatingButtonInputComponent,
   ],
   template: `
     <ng-container>
@@ -57,37 +57,15 @@ export type fieldType =
           class="text-low-emphasis-tx top-5px left-15px absolute duration-[0.1s]"
           >{{ labelText() }}</label
         >
-        @if (type() !== 'education') {
-          @if (isRequired() && !inputValue() && lossFocus()) {
-            <button class="right-15px absolute top-0 bottom-0">
-              <img
-                src="assets/images/icons8-forbidden-100.png"
-                class="h-sm-img w-sm-img"
-              />
-            </button>
-          } @else {
-            <button
-              class="right-15px absolute top-0 bottom-0"
-              (click)="clearInput()"
-            >
-              <svg-icon
-                [src]="'assets/icons/close-01.svg'"
-                class="w-25px aspect-square"
-              ></svg-icon>
-            </button>
-          }
-        } @else {
+        @if (type() === 'education') {
           <button
             #educationDropdownBtn="cdkOverlayOrigin"
             class="right-15px absolute top-0 bottom-0"
             cdkOverlayOrigin
             (click)="isEducationDropdownOpen.set(!isEducationDropdownOpen())"
-          >
-            <img
-              src="assets/images/icons8-sort-down-100.png"
-              class="h-sm-img w-sm-img"
-            />
-          </button>
+            appFloatingButtonInput
+            floatingType="dropdown"
+          ></button>
           <ng-template
             cdkConnectedOverlay
             [cdkConnectedOverlayOpen]="isEducationDropdownOpen()"
@@ -116,6 +94,19 @@ export type fieldType =
               </ul>
             </div>
           </ng-template>
+        } @else if (clearable()) {
+          @if (isRequired() && !inputValue() && lossFocus()) {
+            <svg-icon
+              class="right-15px h-sm-img w-sm-img absolute top-0 bottom-0 my-auto"
+              src="assets/icons/icons8-forbidden-100.svg"
+            ></svg-icon>
+          } @else {
+            <button
+              appFloatingButtonInput
+              floatingType="clear"
+              (click)="clearInput()"
+            ></button>
+          }
         }
       </div>
       @if (isRequired() && !inputValue() && lossFocus()) {
@@ -137,6 +128,7 @@ export default class ProfileInputComponent {
   labelText = signal<string>('');
   type = input.required<fieldType>();
   isRequired = input(false);
+  clearable = input<boolean>();
   errorMsgText = signal<string>('');
   lossFocus = signal(false);
   isEducationDropdownOpen = signal(false);

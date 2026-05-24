@@ -30,15 +30,18 @@ import { Education } from '../../services/models/education';
           type="firstName"
           [inputValue]="userInfo()?.firstName"
           [isRequired]="true"
+          [clearable]="true"
         ></app-profile-input>
         <app-profile-input
           type="lastName"
           [inputValue]="userInfo()?.lastName"
           [isRequired]="true"
+          [clearable]="true"
         ></app-profile-input>
         <app-profile-input
           type="headline"
           [inputValue]="userInfo()?.headline"
+          [clearable]="true"
         ></app-profile-input>
         <app-profile-input
           type="education"
@@ -58,20 +61,22 @@ import { Education } from '../../services/models/education';
             >Show education in my intro</label
           >
         </div>
-
         <app-profile-input
           type="industry"
           [inputValue]="userInfo()?.industry"
           [isRequired]="true"
+          [clearable]="true"
         ></app-profile-input>
         <app-profile-input
           type="country"
           [inputValue]="userInfo()?.country"
           [isRequired]="true"
+          [clearable]="true"
         ></app-profile-input>
         <app-profile-input
           type="location"
           [inputValue]="userInfo()?.location"
+          [clearable]="true"
         ></app-profile-input>
       </div>
     </ng-container>
