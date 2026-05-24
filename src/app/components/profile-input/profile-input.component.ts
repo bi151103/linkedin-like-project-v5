@@ -49,7 +49,8 @@ export type fieldType =
           type="text"
           class="text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full"
           value="{{ inputValue() }}"
-          (blur)="isDirty.set(true)"
+          (blur)="lossFocus.set(true)"
+          (input)="lossFocus.set(false)"
         />
         <label
           #label
@@ -57,22 +58,24 @@ export type fieldType =
           >{{ labelText() }}</label
         >
         @if (type() !== 'education') {
-          <button
-            class="right-15px absolute top-0 bottom-0"
-            (click)="clearInput()"
-          >
-            @if (isRequired() && !inputValue() && isDirty()) {
+          @if (isRequired() && !inputValue() && lossFocus()) {
+            <button class="right-15px absolute top-0 bottom-0">
               <img
                 src="assets/images/icons8-forbidden-100.png"
                 class="h-sm-img w-sm-img"
               />
-            } @else {
+            </button>
+          } @else {
+            <button
+              class="right-15px absolute top-0 bottom-0"
+              (click)="clearInput()"
+            >
               <svg-icon
                 [src]="'assets/icons/close-01.svg'"
                 class="w-25px aspect-square"
               ></svg-icon>
-            }
-          </button>
+            </button>
+          }
         } @else {
           <button
             #educationDropdownBtn="cdkOverlayOrigin"
@@ -115,7 +118,7 @@ export type fieldType =
           </ng-template>
         }
       </div>
-      @if (isRequired() && !inputValue() && isDirty()) {
+      @if (isRequired() && !inputValue() && lossFocus()) {
         <span class="text-error text-xs-small ml-15px">{{
           errorMsgText()
         }}</span>
@@ -130,12 +133,12 @@ export default class ProfileInputComponent {
   inputContainerEle =
     viewChild.required<ElementRef<HTMLElement>>('inputContainer');
   labelEle = viewChild.required<ElementRef<HTMLLabelElement>>('label');
-  inputEle = viewChild.required<ElementRef<HTMLInputElement>>('input');
+  inputEleRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
   labelText = signal<string>('');
   type = input.required<fieldType>();
   isRequired = input(false);
   errorMsgText = signal<string>('');
-  isDirty = signal(false);
+  lossFocus = signal(false);
   isEducationDropdownOpen = signal(false);
   educationList = input<Education[]>([]);
   currentEducation = signal<
@@ -151,34 +154,30 @@ export default class ProfileInputComponent {
   selectedEducationId = model<Optional<string>>(undefined);
 
   constructor() {
+    this.userInfoService.getUserInfo().then((data) => {
+      this.currentEducation.set(data.education);
+      this.selectedEducationId.set(this.currentEducation()?.institution.id);
+    });
     effect(() => {
-      this.userInfoService.getUserInfo().then((data) => {
-        this.currentEducation.set(data.education);
-        this.selectedEducationId.set(this.currentEducation()?.institution.id);
-      });
       if (this.inputValue()) {
         this.labelEle().nativeElement.classList.add('text-xs-small');
         this.labelEle().nativeElement.classList.remove(
           'text-medium',
           'top-[calc(5px+1.2rem)]',
         );
-        if (this.isRequired() && this.isDirty()) {
-          this.inputContainerEle().nativeElement.classList.remove(
-            'border-error',
-          );
-          this.inputEle().nativeElement.classList.remove('outline-error');
-        }
-        this.isDirty.set(false);
       } else {
         this.labelEle().nativeElement.classList.remove('text-xs-small');
         this.labelEle().nativeElement.classList.add(
           'text-medium',
           'top-[calc(5px+1.2rem)]',
         );
-        if (this.isRequired() && this.isDirty()) {
-          this.inputContainerEle().nativeElement.classList.add('border-error');
-          this.inputEle().nativeElement.classList.add('outline-error');
-        }
+      }
+      if (this.isRequired() && this.lossFocus() && !this.inputValue()) {
+        this.inputContainerEle().nativeElement.classList.add('border-error');
+        this.inputEleRef().nativeElement.classList.add('outline-error');
+      } else {
+        this.inputContainerEle().nativeElement.classList.remove('border-error');
+        this.inputEleRef().nativeElement.classList.remove('outline-error');
       }
       switch (this.type()) {
         case 'firstName':
@@ -212,13 +211,8 @@ export default class ProfileInputComponent {
   }
 
   clearInput() {
-    if (this.isRequired() && !this.inputValue() && this.isDirty()) {
-      return;
-    }
-    if (this.isDirty()) {
-      this.isDirty.set(false);
-    }
-    this.inputEle().nativeElement.focus();
+    this.lossFocus.set(false);
+    this.inputEleRef().nativeElement.focus();
     this.inputValue.set('');
   }
 }
