@@ -1,7 +1,6 @@
 import {
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
   input,
@@ -54,7 +53,7 @@ export type fieldType =
         (click)="isEducationDropdownOpen.set(true)"
       >
         <input
-          id="type()"
+          [id]="type()"
           [(ngModel)]="inputValue"
           #input
           autocomplete="off"
@@ -71,7 +70,7 @@ export type fieldType =
           [name]="type()"
         />
         <label
-          for="type()"
+          [for]="type()"
           #label
           [class]="
             [
@@ -96,7 +95,6 @@ export type fieldType =
             [cdkConnectedOverlayOrigin]="educationDropdownBtn"
             (overlayOutsideClick)="isEducationDropdownOpen.set(false)"
             [cdkConnectedOverlayHasBackdrop]="true"
-            [cdkConnectedOverlayBackdropClass]="'bg-transparent'"
           >
             <div
               class="text-small px-15px py-20px border-separator-line block max-h-[300px] w-[250px] rounded-[4px] border bg-white shadow-2xl"
