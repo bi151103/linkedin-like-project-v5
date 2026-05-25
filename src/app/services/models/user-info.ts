@@ -1,6 +1,7 @@
 import { Education } from './education';
 
 export interface UserInfo {
+  id: string;
   firstName: string;
   lastName: string;
   headline?: string;

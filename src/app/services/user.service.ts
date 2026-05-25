@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import BaseService from './base-service';
 import { UserInfo } from './models/user-info';
+import { UpdateResponse } from './models/update-response';
 
 @Injectable({ providedIn: 'root' })
 export default class UserService extends BaseService {
@@ -11,7 +12,7 @@ export default class UserService extends BaseService {
     return json;
   }
 
-  async updateUserInfo(userInfo: UserInfo): Promise<void> {
+  async updateUserInfo(userInfo: UserInfo): Promise<UpdateResponse> {
     const apiUrl = `${this.rootUrl}/user/info`;
     console.log(userInfo);
     const request = new Request(apiUrl, {
@@ -21,6 +22,8 @@ export default class UserService extends BaseService {
         'Content-Type': 'application/json',
       },
     });
-    await fetch(request);
+    const response = await fetch(request);
+    const json = (await response.json()) as UpdateResponse;
+    return json;
   }
 }

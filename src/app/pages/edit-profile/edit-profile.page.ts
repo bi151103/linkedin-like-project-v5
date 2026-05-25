@@ -19,6 +19,8 @@ import { Education } from '../../services/models/education';
 import UserService from '../../services/user.service';
 import OverlayDirective from '../../components/overlay/overlay.component';
 import DialogComponent from '../../components/dialog/dialog.component';
+import FullscreenLoadingComponent from '../../components/fullscreen-loading/fullscreen-loading.component';
+import { UpdateResponse } from '../../services/models/update-response';
 
 @Component({
   selector: 'app-edit-profile',
@@ -28,8 +30,10 @@ import DialogComponent from '../../components/dialog/dialog.component';
     ProfileInputComponent,
     OverlayDirective,
     DialogComponent,
+    FullscreenLoadingComponent,
   ],
   template: `
+    <app-fullscreen-loading [isVisible]="saving()"></app-fullscreen-loading>
     <ng-container>
       <div
         class="h-50px border-separator-line fixed top-0 flex w-full items-center border-b bg-white"
@@ -168,6 +172,7 @@ export default class EditProfilePage implements OnInit {
   );
   confirmOnLeavingDialogVisible = signal(false);
   router = inject(Router);
+  saving = signal(false);
 
   firstNameInput = viewChild.required<ProfileInputComponent>('firstName');
   lastNameInput = viewChild.required<ProfileInputComponent>('lastName');
@@ -182,6 +187,7 @@ export default class EditProfilePage implements OnInit {
 
   async saveProfileChanges() {
     const userInfo: UserInfo = {
+      id: this.userInfo()?.id ?? '',
       firstName: this.firstNameInput().inputValue(),
       lastName: this.lastNameInput().inputValue(),
       headline: this.headlineInput().inputValue(),
@@ -193,8 +199,12 @@ export default class EditProfilePage implements OnInit {
       country: this.countryInput().inputValue(),
       location: this.locationInput().inputValue(),
     };
-
-    await this.userService.updateUserInfo(userInfo);
+    this.saving.set(true);
+    const response: UpdateResponse =
+      await this.userService.updateUserInfo(userInfo);
+    if (response) {
+      this.saving.set(false);
+    }
   }
 
   onLeaveForm() {
