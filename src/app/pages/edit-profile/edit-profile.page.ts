@@ -1,7 +1,6 @@
 import {
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
   OnInit,
@@ -21,6 +20,7 @@ import OverlayDirective from '../../components/overlay/overlay.component';
 import DialogComponent from '../../components/dialog/dialog.component';
 import FullscreenLoadingComponent from '../../components/fullscreen-loading/fullscreen-loading.component';
 import { UpdateResponse } from '../../services/models/update-response';
+import ToastNotificationComponent from '../../components/toast-notification/toast-notification.component';
 
 @Component({
   selector: 'app-edit-profile',
@@ -31,6 +31,7 @@ import { UpdateResponse } from '../../services/models/update-response';
     OverlayDirective,
     DialogComponent,
     FullscreenLoadingComponent,
+    ToastNotificationComponent,
   ],
   template: `
     <app-fullscreen-loading [isVisible]="saving()"></app-fullscreen-loading>
@@ -149,6 +150,14 @@ import { UpdateResponse } from '../../services/models/update-response';
         </app-dialog>
       </div>
     </ng-container>
+    <ng-template> </ng-template>
+    <app-toast-notification
+      #toastNotification
+      [type]="'success'"
+      closeBy="swiping"
+      [isVisible]="receiveResponse()"
+      (closeToast)="receiveResponse.set(false)"
+    ></app-toast-notification>
   `,
   host: {
     class: 'block pt-50px h-screen bg-white',
@@ -173,6 +182,7 @@ export default class EditProfilePage implements OnInit {
   confirmOnLeavingDialogVisible = signal(false);
   router = inject(Router);
   saving = signal(false);
+  receiveResponse = signal(false);
 
   firstNameInput = viewChild.required<ProfileInputComponent>('firstName');
   lastNameInput = viewChild.required<ProfileInputComponent>('lastName');
@@ -182,8 +192,8 @@ export default class EditProfilePage implements OnInit {
   industryInput = viewChild.required<ProfileInputComponent>('industry');
   countryInput = viewChild.required<ProfileInputComponent>('country');
   locationInput = viewChild.required<ProfileInputComponent>('location');
-
-  constructor() {}
+  toastNotification =
+    viewChild.required<ToastNotificationComponent>('toastNotification');
 
   async saveProfileChanges() {
     const userInfo: UserInfo = {
@@ -204,6 +214,11 @@ export default class EditProfilePage implements OnInit {
       await this.userService.updateUserInfo(userInfo);
     if (response) {
       this.saving.set(false);
+      this.toastNotification().type.set(
+        response.status === 'success' ? 'success' : 'error',
+      );
+      this.toastNotification().message.set(response.message);
+      this.receiveResponse.set(true);
     }
   }
 
