@@ -5,7 +5,9 @@ import {
   inject,
   OnInit,
   signal,
+  TemplateRef,
   viewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import UserInfoService from '../../services/user-info.service';
 import { Nullable } from '../../models';
@@ -150,14 +152,6 @@ import ToastNotificationComponent from '../../components/toast-notification/toas
         </app-dialog>
       </div>
     </ng-container>
-    <ng-template> </ng-template>
-    <app-toast-notification
-      #toastNotification
-      [type]="'success'"
-      closeBy="swiping"
-      [isVisible]="receiveResponse()"
-      (closeToast)="receiveResponse.set(false)"
-    ></app-toast-notification>
   `,
   host: {
     class: 'block pt-50px h-screen bg-white',
@@ -183,6 +177,8 @@ export default class EditProfilePage implements OnInit {
   router = inject(Router);
   saving = signal(false);
   receiveResponse = signal(false);
+
+  vcf = inject(ViewContainerRef);
 
   firstNameInput = viewChild.required<ProfileInputComponent>('firstName');
   lastNameInput = viewChild.required<ProfileInputComponent>('lastName');
@@ -214,11 +210,19 @@ export default class EditProfilePage implements OnInit {
       await this.userService.updateUserInfo(userInfo);
     if (response) {
       this.saving.set(false);
-      this.toastNotification().type.set(
+
+      const compRef = this.vcf.createComponent(ToastNotificationComponent);
+      compRef.instance.message.set(response.message);
+      compRef.instance.type.set(
         response.status === 'success' ? 'success' : 'error',
       );
-      this.toastNotification().message.set(response.message);
-      this.receiveResponse.set(true);
+      compRef.setInput('closeBy', 'swiping');
+      compRef.instance.closeToast.subscribe(() => {
+        compRef.instance.isVisible.set(false);
+      });
+      requestAnimationFrame(() => {
+        compRef.instance.isVisible.set(true);
+      });
     }
   }
 
