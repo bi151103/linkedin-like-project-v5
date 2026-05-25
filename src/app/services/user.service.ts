@@ -14,7 +14,6 @@ export default class UserService extends BaseService {
 
   async updateUserInfo(userInfo: UserInfo): Promise<UpdateResponse> {
     const apiUrl = `${this.rootUrl}/user/info`;
-    console.log(userInfo);
     const request = new Request(apiUrl, {
       body: JSON.stringify(userInfo),
       method: 'POST',
