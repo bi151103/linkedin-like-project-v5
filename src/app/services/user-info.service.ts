@@ -6,12 +6,12 @@ import { UserInfo } from './models/user-info';
 @Injectable({ providedIn: 'root' })
 export default class UserInfoService {
   userService = inject(UserService);
-  userInfo: Optional<UserInfo> = undefined;
+  userInfoPromise?: Promise<UserInfo>;
 
   async getUserInfo() {
-    if (!this.userInfo) {
-      this.userInfo = await this.userService.getUserInfo();
+    if (!this.userInfoPromise) {
+      this.userInfoPromise = this.userService.getUserInfo();
     }
-    return this.userInfo;
+    return this.userInfoPromise;
   }
 }
