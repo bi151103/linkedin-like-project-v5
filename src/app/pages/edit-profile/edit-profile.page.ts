@@ -4,6 +4,7 @@ import {
   effect,
   ElementRef,
   inject,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -70,7 +71,6 @@ import DialogComponent from '../../components/dialog/dialog.component';
         <app-profile-input
           type="education"
           [inputValue]="userInfo()?.education?.institution?.educationName ?? ''"
-          [isRequired]="true"
           [educationList]="educationList()"
           #education
           (dirty)="isDirty.set(true)"
@@ -145,14 +145,22 @@ import DialogComponent from '../../components/dialog/dialog.component';
     class: 'block pt-50px h-screen bg-white',
   },
 })
-export default class EditProfilePage {
+export default class EditProfilePage implements OnInit {
   userInfoService = inject(UserInfoService);
   userService = inject(UserService);
   profileService = inject(ProfileService);
   userInfo = signal<Nullable<UserInfo>>(null);
   educationList = signal<Education[]>([]);
   isDirty = signal(false);
-  isFormValid = signal(false);
+  isFormValid = computed(
+    () =>
+      this.firstNameInput().isValid() &&
+      this.lastNameInput().isValid() &&
+      this.educationInput().isValid() &&
+      this.industryInput().isValid() &&
+      this.countryInput().isValid() &&
+      this.locationInput().isValid(),
+  );
   confirmOnLeavingDialogVisible = signal(false);
   router = inject(Router);
 
@@ -166,33 +174,16 @@ export default class EditProfilePage {
   countryInput = viewChild.required<ProfileInputComponent>('country');
   locationInput = viewChild.required<ProfileInputComponent>('location');
 
-  constructor() {
-    effect(() => {
-      this.isFormValid.set(
-        this.firstNameInput().isValid() &&
-          this.lastNameInput().isValid() &&
-          this.educationInput().isValid() &&
-          this.industryInput().isValid() &&
-          this.countryInput().isValid() &&
-          this.locationInput().isValid(),
-      );
-    });
-    this.userInfoService.getUserInfo().then((data) => {
-      this.userInfo.set(data);
-    });
-    this.profileService.getEducations().then((data) => {
-      this.educationList.set(data.data);
-    });
-  }
+  constructor() {}
 
   async saveProfileChanges() {
     const userInfo: UserInfo = {
       firstName: this.firstNameInput().inputValue(),
       lastName: this.lastNameInput().inputValue(),
       headline: this.headlineInput().inputValue(),
-      education: this.educationList().filter(
+      education: this.educationList().find(
         (item) => item.id === this.educationInput().selectedEducationId(),
-      )[0],
+      ),
       showEducation: this.educationShowInput().nativeElement.checked,
       industry: this.industryInput().inputValue(),
       country: this.countryInput().inputValue(),
@@ -208,5 +199,10 @@ export default class EditProfilePage {
     } else {
       this.router.navigate(['/']);
     }
+  }
+
+  async ngOnInit() {
+    this.userInfo.set(await this.userInfoService.getUserInfo());
+    this.educationList.set((await this.profileService.getEducations()).data);
   }
 }

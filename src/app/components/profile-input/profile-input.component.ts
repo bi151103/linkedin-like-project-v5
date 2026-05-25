@@ -54,6 +54,7 @@ export type fieldType =
         (click)="isEducationDropdownOpen.set(true)"
       >
         <input
+          id="type()"
           [(ngModel)]="inputValue"
           #input
           autocomplete="off"
@@ -70,6 +71,7 @@ export type fieldType =
           [name]="type()"
         />
         <label
+          for="type()"
           #label
           [class]="
             [
@@ -151,11 +153,10 @@ export default class ProfileInputComponent implements OnInit {
   inputEleRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
   type = input.required<fieldType>();
   isRequired = input(false);
-  clearable = input<boolean>();
+  clearable = input<boolean>(false);
   lossFocus = signal(true);
   isEducationDropdownOpen = signal(false);
   educationList = input<Education[]>([]);
-  currentEducation = signal<Optional<Education>>(undefined);
   selectedEducationId = model<Optional<string>>(undefined);
   dirty = output();
   isValid = computed(
@@ -163,7 +164,7 @@ export default class ProfileInputComponent implements OnInit {
   );
   valid = output();
   shouldFloatLabel = computed(
-    () => this.inputValue() || (!this.lossFocus() && !this.inputValue()),
+    () => !!(this.inputValue() || (!this.lossFocus() && !this.inputValue())),
   );
   shouldShowInputError = computed(
     () => this.isRequired() && this.lossFocus() && !this.inputValue(),
@@ -201,10 +202,10 @@ export default class ProfileInputComponent implements OnInit {
   }
 
   clearInput() {
-    this.notifyChanges();
-    this.lossFocus.set(false);
-    this.inputEleRef().nativeElement.focus();
     this.inputValue.set('');
+    this.inputEleRef().nativeElement.focus();
+    this.lossFocus.set(false);
+    this.notifyChanges();
   }
 
   onInput() {
@@ -220,9 +221,8 @@ export default class ProfileInputComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.currentEducation.set(
-      (await this.userInfoService.getUserInfo()).education,
+    this.selectedEducationId.set(
+      (await this.userInfoService.getUserInfo()).education?.id,
     );
-    this.selectedEducationId.set(this.currentEducation()?.id);
   }
 }

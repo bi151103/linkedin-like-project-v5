@@ -4,7 +4,7 @@ export interface UserInfo {
   firstName: string;
   lastName: string;
   headline?: string;
-  education: Education;
+  education?: Education;
   showEducation: boolean;
   industry: string;
   country: string;
