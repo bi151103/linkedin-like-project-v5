@@ -6,6 +6,7 @@ import {
   inject,
   input,
   model,
+  OnInit,
   output,
   signal,
   viewChild,
@@ -42,17 +43,27 @@ export type fieldType =
     <ng-container>
       <div
         #inputContainer
-        class="relative rounded-[4px] border-[1.5px] border-[rgba(0,0,0,0.6)]"
+        [class]="
+          [
+            'relative rounded-[4px] border-[1.5px] border-[rgba(0,0,0,0.6)]',
+            shouldShowInputError() ? 'border-error' : '',
+          ] | twMerge
+        "
         #educationDropdownBtn="cdkOverlayOrigin"
         cdkOverlayOrigin
-        (click)="isEducationDropdownOpen.set(!isEducationDropdownOpen())"
+        (click)="isEducationDropdownOpen.set(true)"
       >
         <input
           [(ngModel)]="inputValue"
           #input
           autocomplete="off"
           type="text"
-          class="text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full"
+          [class]="
+            [
+              'text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full',
+              shouldShowInputError() ? 'outline-error' : '',
+            ] | twMerge
+          "
           (blur)="lossFocus.set(true)"
           (focus)="lossFocus.set(false)"
           (input)="onInput()"
@@ -60,9 +71,16 @@ export type fieldType =
         />
         <label
           #label
-          class="text-low-emphasis-tx top-5px left-15px absolute duration-[0.1s]"
+          [class]="
+            [
+              'text-low-emphasis-tx top-5px left-15px absolute duration-[0.1s]',
+              shouldFloatLabel()
+                ? 'text-xs-small'
+                : 'text-medium top-[calc(5px+1.2rem)]',
+            ] | twMerge
+          "
           (click)="onLabelClick()"
-          >{{ labelText() }}</label
+          >{{ textConfigs().label }}</label
         >
         @if (type() === 'education') {
           <button
@@ -101,7 +119,7 @@ export type fieldType =
             </div>
           </ng-template>
         } @else if (clearable()) {
-          @if (isRequired() && !inputValue() && lossFocus()) {
+          @if (shouldShowInputError()) {
             <svg-icon
               class="right-15px h-sm-img w-sm-img absolute top-0 bottom-0 my-auto"
               src="assets/icons/icons8-forbidden-100.svg"
@@ -115,103 +133,66 @@ export type fieldType =
           }
         }
       </div>
-      @if (isRequired() && !inputValue() && lossFocus()) {
+      @if (shouldShowInputError()) {
         <span class="text-error text-xs-small ml-15px">{{
-          errorMsgText()
+          textConfigs().error
         }}</span>
       }
     </ng-container>
   `,
   host: { class: 'block not-first:mt-10px' },
 })
-export default class ProfileInputComponent {
-  _console = console;
+export default class ProfileInputComponent implements OnInit {
   userInfoService = inject(UserInfoService);
   inputValue = model.required<string>();
   inputContainerEle =
     viewChild.required<ElementRef<HTMLElement>>('inputContainer');
   labelEle = viewChild.required<ElementRef<HTMLLabelElement>>('label');
   inputEleRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
-  labelText = signal<string>('');
   type = input.required<fieldType>();
   isRequired = input(false);
   clearable = input<boolean>();
-  errorMsgText = signal<string>('');
   lossFocus = signal(true);
   isEducationDropdownOpen = signal(false);
   educationList = input<Education[]>([]);
   currentEducation = signal<Optional<Education>>(undefined);
   selectedEducationId = model<Optional<string>>(undefined);
-  isDirty = signal(false);
   dirty = output();
-  isValid = signal(false);
+  isValid = computed(
+    () => !this.isRequired() || (this.isRequired() && !!this.inputValue()),
+  );
   valid = output();
+  shouldFloatLabel = computed(
+    () => this.inputValue() || (!this.lossFocus() && !this.inputValue()),
+  );
+  shouldShowInputError = computed(
+    () => this.isRequired() && this.lossFocus() && !this.inputValue(),
+  );
+  textConfigs = computed(() => {
+    const field = this.type();
+    const configs: Record<fieldType, { label: string; error?: string }> = {
+      firstName: {
+        label: 'First name',
+        error: 'Please enter your first name.',
+      },
+      lastName: { label: 'Last name', error: 'Please enter your last name.' },
+      headline: { label: 'Headline' },
+      education: { label: 'Education', error: 'Please select an education' },
+      country: {
+        label: 'Country/Region',
+        error: 'Please select a country/region.',
+      },
+      industry: { label: 'Industry', error: 'Please select your industry.' },
+      location: { label: 'Locations in this Country/Region', error: '' },
+    };
+    return configs[field] || { label: '', error: '' };
+  });
 
-  onDirty() {
+  notifyChanges() {
     this.dirty.emit();
     if (this.isValid()) {
       this.valid.emit();
     }
-  }
-
-  constructor() {
-    this.userInfoService.getUserInfo().then((data) => {
-      this.currentEducation.set(data.education);
-      this.selectedEducationId.set(this.currentEducation()?.id);
-    });
-    effect(() => {
-      if (this.inputValue() || (!this.lossFocus() && !this.inputValue())) {
-        this.labelEle().nativeElement.classList.add('text-xs-small');
-        this.labelEle().nativeElement.classList.remove(
-          'text-medium',
-          'top-[calc(5px+1.2rem)]',
-        );
-      } else {
-        this.labelEle().nativeElement.classList.remove('text-xs-small');
-        this.labelEle().nativeElement.classList.add(
-          'text-medium',
-          'top-[calc(5px+1.2rem)]',
-        );
-      }
-      if (this.isRequired() && this.lossFocus() && !this.inputValue()) {
-        this.inputContainerEle().nativeElement.classList.add('border-error');
-        this.inputEleRef().nativeElement.classList.add('outline-error');
-      } else {
-        this.inputContainerEle().nativeElement.classList.remove('border-error');
-        this.inputEleRef().nativeElement.classList.remove('outline-error');
-      }
-      switch (this.type()) {
-        case 'firstName':
-          this.labelText.set('First name');
-          this.errorMsgText.set('Please enter your first name.');
-          break;
-        case 'lastName':
-          this.labelText.set('Last name');
-          this.errorMsgText.set('Please enter your last name.');
-          break;
-        case 'headline':
-          this.labelText.set('Headline');
-          break;
-        case 'education':
-          this.labelText.set('Education');
-          break;
-        case 'country':
-          this.labelText.set('Country/Region');
-          this.errorMsgText.set('Please select a country/region.');
-          break;
-        case 'industry':
-          this.labelText.set('Industry');
-          this.errorMsgText.set('Please select your industry.');
-          break;
-        case 'location':
-          this.labelText.set('Locations in this Country/Region');
-          break;
-        default:
-      }
-      this.isValid.set(
-        !this.isRequired() || (this.isRequired() && !!this.inputValue()),
-      );
-    });
   }
 
   onLabelClick() {
@@ -220,24 +201,28 @@ export default class ProfileInputComponent {
   }
 
   clearInput() {
-    this.isDirty.set(true);
-    this.onDirty();
+    this.notifyChanges();
     this.lossFocus.set(false);
     this.inputEleRef().nativeElement.focus();
     this.inputValue.set('');
   }
 
   onInput() {
-    this.isDirty.set(true);
-    this.onDirty();
+    this.notifyChanges();
   }
 
   onDropdownSelect(selected: Education) {
     if (selected.id !== this.selectedEducationId()) {
       this.selectedEducationId.set(selected.id);
       this.inputValue.set(selected.institution.educationName);
-      this.isDirty.set(true);
-      this.onDirty();
+      this.notifyChanges();
     }
+  }
+
+  async ngOnInit() {
+    this.currentEducation.set(
+      (await this.userInfoService.getUserInfo()).education,
+    );
+    this.selectedEducationId.set(this.currentEducation()?.id);
   }
 }
