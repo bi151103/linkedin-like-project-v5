@@ -212,16 +212,18 @@ export default class EditProfilePage implements OnInit {
       this.saving.set(false);
 
       const compRef = this.vcf.createComponent(ToastNotificationComponent);
+      compRef.instance.isVisible.set(true);
       compRef.instance.message.set(response.message);
       compRef.instance.type.set(
         response.status === 'success' ? 'success' : 'error',
       );
+      compRef.setInput('closeBy', 'clickingCloseBtn');
       compRef.setInput('closeBy', 'swiping');
       compRef.instance.closeToast.subscribe(() => {
         compRef.instance.isVisible.set(false);
-      });
-      requestAnimationFrame(() => {
-        compRef.instance.isVisible.set(true);
+        setTimeout(() => {
+          compRef.destroy(); //destroy component after 1s being invisible
+        }, 1000);
       });
     }
   }

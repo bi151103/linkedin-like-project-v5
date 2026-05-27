@@ -1,4 +1,6 @@
 import {
+  afterNextRender,
+  afterRender,
   Component,
   effect,
   ElementRef,
@@ -36,7 +38,7 @@ export type ToastNotificationType = 'success' | 'error' | 'warning';
               [class]="
                 [
                   'h-50px bottom-40px text-success fixed right-0 left-0 mx-auto flex w-[80vw] items-center bg-white font-medium shadow-2xl duration-500',
-                  elapsed() > 0 && isVisible()
+                  timer > 0 && isVisible()
                     ? 'translate-0 opacity-100'
                     : 'translate-y-[100px] opacity-0',
                   shouldRemoveDurationClass() ? 'duration-0' : '',
@@ -45,14 +47,14 @@ export type ToastNotificationType = 'success' | 'error' | 'warning';
               cdkDrag
               [cdkDragBoundary]="dragBoundary"
               [cdkDragDisabled]="false"
-              (cdkDragMoved)="onDragMoved($event)"
+              (cdkDragMoved)="onDragMoved()"
               (cdkDragEnded)="onDropped()"
               #toastContainer
             >
               <span class="w-5px bg-success mr-auto h-full"></span>
               <span class="ml-10px px-10px grow">{{ message() }}</span>
               <span class="mr-20px text-emphasis-tx"
-                >{{ elapsed() | timeMilToSec }}
+                >{{ timer | timeMilToSec }}
               </span>
             </div>
           } @else {
@@ -60,6 +62,9 @@ export type ToastNotificationType = 'success' | 'error' | 'warning';
               [class]="
                 [
                   'h-50px bottom-40px text-success fixed right-0 left-0 mx-auto flex w-[80vw] translate-0 items-center bg-white font-medium opacity-100 shadow-2xl duration-500',
+                  timer > 0 && isVisible()
+                    ? 'translate-0 opacity-100'
+                    : 'translate-y-[100px] opacity-0',
                 ] | twMerge
               "
               #toastContainer
@@ -87,33 +92,37 @@ export default class ToastNotificationComponent {
   closeBy = input.required<'swiping' | 'clickingCloseBtn'>();
   type = model.required<ToastNotificationType>();
   message = model<string>('');
-  toastEleRef = viewChild<ElementRef<HTMLElement>>('toastContainer');
+  toastEleRef = viewChild.required<ElementRef<HTMLElement>>('toastContainer');
   screenHeight = window.innerHeight;
-  elapsed = signal<number>(0);
+  timer = 0;
   closeToast = output();
   shouldRemoveDurationClass = signal(false);
+  fromOriginalPosition = signal(false);
 
   constructor() {
     effect((onCleanUp) => {
       let intervalId: number;
       if (this.isVisible()) {
-        const toastEle = this.toastEleRef()?.nativeElement;
         if (this.closeBy() === 'swiping') {
-          const timer = 5000; //ms
-          this.elapsed.set(timer);
+          requestAnimationFrame(() => {
+            const timer = 5000; //ms
+            this.timer = timer;
 
-          intervalId = setInterval(() => {
-            this.elapsed.set(this.elapsed() - 1000);
-            if (this.elapsed() <= 0) {
-              this.closeToast.emit();
-              this.elapsed.set(0);
-            }
-          }, 1000);
+            intervalId = setInterval(() => {
+              this.timer = this.timer - 1000;
+              if (this.timer <= 0) {
+                this.closeToast.emit();
+                this.timer = 0;
+              }
+            }, 1000);
+          });
+        } else {
+          requestAnimationFrame(() => {
+            this.timer = 1000;
+          });
         }
-        toastEle?.setAttribute('style', 'translate: none');
       } else {
-        const toastEle = this.toastEleRef()?.nativeElement;
-        toastEle?.setAttribute('style', 'translate: 0 100px');
+        this.timer = 0;
         this.shouldRemoveDurationClass.set(false);
       }
       onCleanUp(() => {
@@ -122,26 +131,20 @@ export default class ToastNotificationComponent {
     });
   }
 
-  onDragMoved(event: CdkDragMove) {
-    const { x, y } = event.distance;
+  onDragMoved() {
     this.shouldRemoveDurationClass.set(true);
-    this.toastEleRef()?.nativeElement.setAttribute(
-      'style',
-      `translate: ${x}px ${y}px`,
-    );
   }
 
   onDropped() {
     this.shouldRemoveDurationClass.set(false);
-    const toastEle = this.toastEleRef()?.nativeElement;
-    const boundingBox = toastEle?.getBoundingClientRect();
+    const toastEle = this.toastEleRef().nativeElement;
+    const boundingBox = toastEle.getBoundingClientRect();
     if (
       boundingBox &&
       boundingBox.top &&
       boundingBox.top > this.screenHeight - 50
     ) {
       this.closeToast.emit();
-      this.elapsed.set(0);
     }
   }
 }
