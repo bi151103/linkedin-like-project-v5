@@ -217,7 +217,7 @@ export default class EditProfilePage implements OnInit {
       compRef.instance.type.set(
         response.status === 'success' ? 'success' : 'error',
       );
-      compRef.setInput('closeBy', 'clickingCloseBtn');
+      // compRef.setInput('closeBy', 'clickingCloseBtn');
       compRef.setInput('closeBy', 'swiping');
       compRef.instance.closeToast.subscribe(() => {
         compRef.instance.isVisible.set(false);
