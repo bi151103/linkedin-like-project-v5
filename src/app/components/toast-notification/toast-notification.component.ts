@@ -92,20 +92,19 @@ export default class ToastNotificationComponent {
   elapsed = signal<number>(0);
   closeToast = output();
   shouldRemoveDurationClass = signal(false);
-  intervalId = 0;
 
   constructor() {
-    effect(() => {
+    effect((onCleanUp) => {
+      let intervalId: number;
       if (this.isVisible()) {
         const toastEle = this.toastEleRef()?.nativeElement;
         if (this.closeBy() === 'swiping') {
           const timer = 5000; //ms
           this.elapsed.set(timer);
 
-          this.intervalId = setInterval(() => {
+          intervalId = setInterval(() => {
             this.elapsed.set(this.elapsed() - 1000);
             if (this.elapsed() <= 0) {
-              clearInterval(this.intervalId);
               this.closeToast.emit();
               this.elapsed.set(0);
             }
@@ -117,6 +116,9 @@ export default class ToastNotificationComponent {
         toastEle?.setAttribute('style', 'translate: 0 100px');
         this.shouldRemoveDurationClass.set(false);
       }
+      onCleanUp(() => {
+        clearInterval(intervalId);
+      });
     });
   }
 
@@ -138,7 +140,6 @@ export default class ToastNotificationComponent {
       boundingBox.top &&
       boundingBox.top > this.screenHeight - 50
     ) {
-      clearInterval(this.intervalId);
       this.closeToast.emit();
       this.elapsed.set(0);
     }
