@@ -210,6 +210,7 @@ export default class EditProfilePage implements OnInit {
       await this.userService.updateUserInfo(userInfo);
     if (response) {
       this.saving.set(false);
+      this.isDirty.set(false);
 
       const compRef = this.vcf.createComponent(ToastNotificationComponent);
       compRef.instance.isVisible.set(true);
