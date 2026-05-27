@@ -6,7 +6,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import HeaderComponent from '../../components/header/header.component';
+import HeaderComponent from '../../components/profile-header/header.component';
 import OverlayDirective from '../../components/overlay/overlay.component';
 import DialogComponent from '../../components/dialog/dialog.component';
 import SearchComboboxDialogComponent from '../../components/search-combobox-dialog/search-combobox-dialog.component';
