@@ -53,7 +53,7 @@ import { GeneralNotificationResponse } from '../../services/models/general-notif
     </ng-container>
     <ng-container>
       <section class="flex h-[40px] w-full bg-white">
-        <a class="w-min" routerLink="add-profile">
+        <a class="w-min" routerLink="add-profile-photo">
           <div class="relative ml-[15px] h-full w-[120px]">
             <div
               class="border-primary-tx absolute bottom-0 flex h-3/1 w-full flex-col items-center justify-center rounded-full border-2 border-double bg-white"
