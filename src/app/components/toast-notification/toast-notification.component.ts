@@ -98,13 +98,14 @@ export default class ToastNotificationComponent {
   closeToast = output();
   shouldRemoveDurationClass = signal(false);
   fromOriginalPosition = signal(false);
+  animationFrame = -1;
 
   constructor() {
     effect((onCleanUp) => {
       let intervalId: number;
       if (this.isVisible()) {
         if (this.closeBy() === 'swiping') {
-          requestAnimationFrame(() => {
+          this.animationFrame = requestAnimationFrame(() => {
             const timer = 5000; //ms
             this.timer = timer;
 
@@ -117,7 +118,7 @@ export default class ToastNotificationComponent {
             }, 1000);
           });
         } else {
-          requestAnimationFrame(() => {
+          this.animationFrame = requestAnimationFrame(() => {
             this.timer = 1000;
           });
         }
@@ -146,5 +147,9 @@ export default class ToastNotificationComponent {
     ) {
       this.closeToast.emit();
     }
+  }
+
+  ngOnDestroy() {
+    cancelAnimationFrame(this.animationFrame);
   }
 }
