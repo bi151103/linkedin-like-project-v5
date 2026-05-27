@@ -23,34 +23,27 @@ import DialogComponent from '../../components/dialog/dialog.component';
 import FullscreenLoadingComponent from '../../components/fullscreen-loading/fullscreen-loading.component';
 import { UpdateResponse } from '../../services/models/update-response';
 import ToastNotificationComponent from '../../components/toast-notification/toast-notification.component';
+import EditPageHeaderComponent from '../../components/edit-page-header/edit-page-header.component';
 
 @Component({
   selector: 'app-edit-profile',
   imports: [
-    ButtonComponent,
     RouterLink,
     ProfileInputComponent,
     OverlayDirective,
     DialogComponent,
     FullscreenLoadingComponent,
-    ToastNotificationComponent,
+    EditPageHeaderComponent,
   ],
   template: `
     <app-fullscreen-loading [isVisible]="saving()"></app-fullscreen-loading>
     <ng-container>
-      <div
-        class="h-50px border-separator-line fixed top-0 flex w-full items-center border-b bg-white"
-      >
-        <button appButton (click)="onLeaveForm()"></button>
-        <h1 class="text-emphasis-tx px-15px">Edit Intro</h1>
-        <button
-          [disabled]="!isFormValid() || !isDirty()"
-          class="min-w-50px px-15px disabled:text-disabled-tx ml-auto text-inherit"
-          (click)="saveProfileChanges()"
-        >
-          Save
-        </button>
-      </div>
+      <app-edit-page-header
+        type="edit-profile"
+        (saveClick)="saveProfileChanges()"
+        (backClick)="onLeaveForm()"
+        [isSaveBtnDisabled]="!isFormValid() || !isDirty()"
+      ></app-edit-page-header>
       <form class="px-15px py-10px bg-white" (submit)="$event.preventDefault()">
         <app-profile-input
           type="firstName"
