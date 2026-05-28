@@ -4,7 +4,7 @@ import { SvgIconComponent } from 'angular-svg-icon';
 export type ButtonType = 'back';
 
 @Component({
-  selector: 'button[appButton]',
+  selector: 'button[appIconButton]',
   imports: [SvgIconComponent],
   template: `
     <ng-container>
@@ -20,7 +20,7 @@ export type ButtonType = 'back';
       'min-w-md-img w-md-img h-md-img flex h-full items-center justify-center',
   },
 })
-export default class ButtonComponent {
+export default class IconButtonComponent {
   btnType = input.required<ButtonType>();
 
   srcMapConfig = computed(() => {

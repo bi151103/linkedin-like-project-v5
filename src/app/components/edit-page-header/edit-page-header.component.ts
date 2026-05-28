@@ -1,18 +1,18 @@
 import { Component, computed, input, output } from '@angular/core';
-import ButtonComponent from '../button/button.component';
+import IconButtonComponent from '../icon-button/icon-button.component';
 
 export type EditPageType = 'edit-profile' | 'edit-about';
 
 @Component({
   selector: 'app-edit-page-header',
-  imports: [ButtonComponent],
+  imports: [IconButtonComponent],
   template: `
     <ng-container>
       <div
         class="h-50px border-separator-line fixed top-0 flex w-full items-center border-b bg-white"
       >
         <button
-          appButton
+          appIconButton
           btnType="back"
           (click)="backClick.emit(contentConfigs().backTo)"
         ></button>
