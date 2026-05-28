@@ -27,7 +27,8 @@ export type FieldType =
   | 'education'
   | 'industry'
   | 'location'
-  | 'country';
+  | 'country'
+  | 'about';
 
 export type TextBoxInputType = 'input' | 'textarea';
 
@@ -80,15 +81,16 @@ export type TextBoxInputType = 'input' | 'textarea';
             "
           />
         } @else {
+          <!-- need to add align-middle to remove the space under the input (the space is dedicated for letters such as q, y p, g) -->
           <textarea
+            rows="5"
             [id]="type()"
             [(ngModel)]="inputValue"
             #input
             autocomplete="off"
-            type="text"
             [class]="
               [
-                'text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full',
+                'text-emphasis-tx pt-20px pb-10px pl-15px pr-50px w-full align-middle',
                 shouldShowInputError() ? 'outline-error' : '',
               ] | twMerge
             "
@@ -203,6 +205,9 @@ export default class ProfileInputComponent implements OnInit {
       },
       industry: { label: 'Industry', error: 'Please select your industry.' },
       location: { label: 'Locations in this Country/Region', error: '' },
+      about: {
+        label: 'Summary',
+      },
     };
     return configs[field] || { label: '', error: '' };
   });

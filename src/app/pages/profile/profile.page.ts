@@ -3,6 +3,7 @@ import {
   computed,
   ElementRef,
   inject,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -108,14 +109,14 @@ import { GeneralNotificationResponse } from '../../services/models/general-notif
       <section class="mt-10px p-15px bg-white">
         <div class="flex">
           <h2>About</h2>
-          <a routerLink="about" class="ml-auto">
+          <a routerLink="edit-about" class="ml-auto">
             <img
               class="h-sm-img w-sm-img"
               src="assets/images/icons8-edit-100.png"
             />
           </a>
         </div>
-        <p class="mt-10px">As early of 2026</p>
+        <p class="mt-10px">{{ aboutData() }}</p>
       </section>
     </ng-container>
     <app-footer
@@ -135,7 +136,7 @@ import { GeneralNotificationResponse } from '../../services/models/general-notif
     class: 'block py-50px',
   },
 })
-export class ProfilePage {
+export class ProfilePage implements OnInit {
   searchDialogVisible = signal(false);
   userInfoService = inject(UserInfoService);
   profileService = inject(ProfileService);
@@ -147,34 +148,7 @@ export class ProfilePage {
   messageNotifications = signal<Nullable<MessageNotificationResponse>>(null);
   networkNotifications = signal<Nullable<NetworkNotificationResponse>>(null);
   generalNotifications = signal<Nullable<GeneralNotificationResponse>>(null);
-
-  constructor() {
-    this.userInfoService.getUserInfo().then((data) => {
-      this.userInfo.set(data);
-    });
-    this.profileService.getExperiences().then((data) => {
-      this.experiences.set(data);
-      this.recentCompanyExp.set(
-        this.experiences().sort(
-          (a, b) =>
-            new Date(b.experiences[0].duration.start).getTime() -
-            new Date(a.experiences[0].duration.start).getTime(),
-        )[0].company.companyName,
-      );
-    });
-    this.profileService.getConnections().then((data) => {
-      this.connectionCount.set(data.count);
-    });
-    this.profileService.getMessageNotifications().then((data) => {
-      this.messageNotifications.set(data);
-    });
-    this.profileService.getNetworkNotifications().then((data) => {
-      this.networkNotifications.set(data);
-    });
-    this.profileService.getGeneralNotifications().then((data) => {
-      this.generalNotifications.set(data);
-    });
-  }
+  aboutData = signal<string>('');
 
   showSearchComboboxDialog() {
     this.searchDialogVisible.set(true);
@@ -193,5 +167,30 @@ export class ProfilePage {
     } catch (e) {
       console.error('The browser does not support the sharing with navigator');
     }
+  }
+
+  async ngOnInit() {
+    this.userInfo.set(await this.userInfoService.getUserInfo());
+    this.experiences.set(await this.profileService.getExperiences());
+    this.recentCompanyExp.set(
+      this.experiences().sort(
+        (a, b) =>
+          new Date(b.experiences[0].duration.start).getTime() -
+          new Date(a.experiences[0].duration.start).getTime(),
+      )[0].company.companyName,
+    );
+    this.connectionCount.set(
+      (await this.profileService.getConnections()).count,
+    );
+    this.messageNotifications.set(
+      await this.profileService.getMessageNotifications(),
+    );
+    this.networkNotifications.set(
+      await this.profileService.getNetworkNotifications(),
+    );
+    this.generalNotifications.set(
+      await this.profileService.getGeneralNotifications(),
+    );
+    this.aboutData.set((await this.profileService.getAboutData()).data);
   }
 }

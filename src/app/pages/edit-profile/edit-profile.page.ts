@@ -11,7 +11,6 @@ import {
 import UserInfoService from '../../services/user-info.service';
 import { Nullable } from '../../models';
 import { UserInfo } from '../../services/models/user-info';
-import { Router } from '@angular/router';
 import ProfileInputComponent from '../../components/profile-input/profile-input.component';
 import ProfileService from '../../services/profile.service';
 import { Education } from '../../services/models/education';
@@ -134,9 +133,7 @@ export default class EditProfilePage implements OnInit {
       this.countryInput().isValid() &&
       this.locationInput().isValid(),
   );
-  router = inject(Router);
   saving = signal(false);
-  receiveResponse = signal(false);
 
   vcf = inject(ViewContainerRef);
 

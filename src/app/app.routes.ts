@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import NotFoundPage from './pages/not-found/not-found.page';
 import { ProfilePage } from './pages/profile/profile.page';
 import EditProfilePage from './pages/edit-profile/edit-profile.page';
+import EditAboutPage from './pages/edit-about/edit-about.page';
 
 export const routes: Routes = [
   {
@@ -13,6 +14,11 @@ export const routes: Routes = [
     path: 'edit-profile',
     component: EditProfilePage,
     title: 'Edit Intro | LinkedIn',
+  },
+  {
+    path: 'edit-about',
+    component: EditAboutPage,
+    title: 'Edit About | LinkedIn',
   },
   {
     path: 'not-found',

@@ -19,6 +19,7 @@ import TimeMilToSecPipe from '../../pipes/time-mili-to-sec.pipe';
 import { SvgIconComponent } from 'angular-svg-icon';
 
 export type ToastNotificationType = 'success' | 'error' | 'warning';
+export type ToastClosingType = 'swiping' | 'clickingCloseBtn';
 
 @Component({
   selector: 'app-toast-notification',
@@ -90,7 +91,7 @@ export type ToastNotificationType = 'success' | 'error' | 'warning';
 })
 export default class ToastNotificationComponent implements OnDestroy {
   isVisible = model(false);
-  closeBy = input.required<'swiping' | 'clickingCloseBtn'>();
+  closeBy = input.required<ToastClosingType>();
   type = model.required<ToastNotificationType>();
   message = model<string>('');
   toastEleRef = viewChild.required<ElementRef<HTMLElement>>('toastContainer');

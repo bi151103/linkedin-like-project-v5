@@ -7,6 +7,8 @@ import { MessageNotificationResponse } from './models/message-notification-respo
 import { NetworkNotificationResponse } from './models/network-notification-response';
 import { GeneralNotificationResponse } from './models/general-notification-response';
 import { EducationResponse } from './models/education-response';
+import { About } from './models/about';
+import { UpdateResponse } from './models/update-response';
 
 @Injectable({ providedIn: 'root' })
 export default class ProfileService extends BaseService {
@@ -68,6 +70,27 @@ export default class ProfileService extends BaseService {
     const apiUrl = `${this.rootUrl}/educations`;
     const response = await fetch(apiUrl);
     const json = (await response.json()) as EducationResponse;
+    return json;
+  }
+
+  async getAboutData(): Promise<About> {
+    const apiUrl = `${this.rootUrl}/about`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as About;
+    return json;
+  }
+
+  async updateAboutData(about: About): Promise<UpdateResponse> {
+    const apiUrl = `${this.rootUrl}/about`;
+    const request = new Request(apiUrl, {
+      body: JSON.stringify(about),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const response = await fetch(request);
+    const json = (await response.json()) as UpdateResponse;
     return json;
   }
 }
