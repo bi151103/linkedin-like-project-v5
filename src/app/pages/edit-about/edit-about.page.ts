@@ -7,7 +7,7 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import EditPageHeaderComponent from '../../components/edit-page-header/edit-page-header.component';
+import FormPageHeaderComponent from '../../components/form-page-header/form-page-header.component';
 import ProfileInputComponent from '../../components/profile-input/profile-input.component';
 import ProfileService from '../../services/profile.service';
 import FormDirective from '../../directives/form.directive';
@@ -19,7 +19,7 @@ import ToastNotificationService from '../../services/toast-notification.service'
 @Component({
   selector: 'app-edit-about',
   imports: [
-    EditPageHeaderComponent,
+    FormPageHeaderComponent,
     FormDirective,
     ProfileInputComponent,
     FullscreenLoadingComponent,
@@ -27,12 +27,13 @@ import ToastNotificationService from '../../services/toast-notification.service'
   template: `
     <app-fullscreen-loading [isVisible]="saving()"></app-fullscreen-loading>
     <ng-container>
-      <app-edit-page-header
+      <app-form-page-header
         type="edit-about"
+        formType="edit"
         [isSaveBtnDisabled]="!isFormValid() || !form.isDirty()"
         (backClick)="form.onLeaveForm($event)"
         (saveClick)="saveAboutChanges()"
-      ></app-edit-page-header>
+      ></app-form-page-header>
       <form class="px-15px py-10px bg-white" appForm #form="appForm">
         <app-profile-input
           type="about"

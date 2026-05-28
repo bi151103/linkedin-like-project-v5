@@ -17,7 +17,7 @@ import { Education } from '../../services/models/education';
 import FullscreenLoadingComponent from '../../components/fullscreen-loading/fullscreen-loading.component';
 import { UpdateResponse } from '../../services/models/update-response';
 import ToastNotificationComponent from '../../components/toast-notification/toast-notification.component';
-import EditPageHeaderComponent from '../../components/edit-page-header/edit-page-header.component';
+import FormPageHeaderComponent from '../../components/form-page-header/form-page-header.component';
 import FormDirective from '../../directives/form.directive';
 import UserService from '../../services/user.service';
 import ToastNotificationService from '../../services/toast-notification.service';
@@ -27,18 +27,19 @@ import ToastNotificationService from '../../services/toast-notification.service'
   imports: [
     ProfileInputComponent,
     FullscreenLoadingComponent,
-    EditPageHeaderComponent,
+    FormPageHeaderComponent,
     FormDirective,
   ],
   template: `
     <app-fullscreen-loading [isVisible]="saving()"></app-fullscreen-loading>
     <ng-container>
-      <app-edit-page-header
+      <app-form-page-header
         type="edit-profile"
+        formType="edit"
         (saveClick)="saveProfileChanges()"
         (backClick)="form.onLeaveForm($event)"
         [isSaveBtnDisabled]="!isFormValid() || !form.isDirty()"
-      ></app-edit-page-header>
+      ></app-form-page-header>
       <form class="px-15px py-10px bg-white" appForm #form="appForm">
         <app-profile-input
           type="firstName"

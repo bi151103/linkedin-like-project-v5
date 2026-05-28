@@ -28,7 +28,9 @@ export type FieldType =
   | 'industry'
   | 'location'
   | 'country'
-  | 'about';
+  | 'about'
+  | 'featured-name'
+  | 'featured-description';
 
 export type TextBoxInputType = 'input' | 'textarea';
 
@@ -207,6 +209,13 @@ export default class ProfileInputComponent implements OnInit {
       location: { label: 'Locations in this Country/Region', error: '' },
       about: {
         label: 'Summary',
+      },
+      'featured-name': {
+        label: 'Title',
+        error: 'Please enter the title',
+      },
+      'featured-description': {
+        label: 'Description (optional)',
       },
     };
     return configs[field] || { label: '', error: '' };

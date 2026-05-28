@@ -3,6 +3,7 @@ import NotFoundPage from './pages/not-found/not-found.page';
 import { ProfilePage } from './pages/profile/profile.page';
 import EditProfilePage from './pages/edit-profile/edit-profile.page';
 import EditAboutPage from './pages/edit-about/edit-about.page';
+import AddFeaturedPage from './pages/add-feature/add-feature.page';
 
 export const routes: Routes = [
   {
@@ -19,6 +20,11 @@ export const routes: Routes = [
     path: 'edit-about',
     component: EditAboutPage,
     title: 'Edit About | LinkedIn',
+  },
+  {
+    path: 'add-featured',
+    component: AddFeaturedPage,
+    title: 'Profile | LinkedIn',
   },
   {
     path: 'not-found',

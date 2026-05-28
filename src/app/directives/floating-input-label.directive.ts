@@ -1,14 +1,10 @@
 import {
-  computed,
   Directive,
   effect,
-  ElementRef,
   EmbeddedViewRef,
   inject,
   input,
-  output,
   Renderer2,
-  signal,
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
@@ -32,8 +28,6 @@ export default class FloatingInputLabelDirective {
   appFloatingInputLabel = input<string>('');
   appFloatingInputLabelLabelFor = input<string>('');
   appFloatingInputLabelShouldFloatLabel = input.required<boolean>();
-
-  labelClick = output();
 
   constructor() {
     this.viewRef = this.viewContainerRef.createEmbeddedView(this.templateRef);
@@ -78,10 +72,10 @@ export default class FloatingInputLabelDirective {
         'for',
         this.appFloatingInputLabelLabelFor(),
       );
-      this.renderer.listen(this.labelEle, 'click', () => {
-        this.labelClick.emit();
-      });
       this.renderer.appendChild(inputContainer, this.labelEle);
+      this.renderer.listen(this.labelEle, 'click', () => {
+        inputEle.focus();
+      });
     });
   }
 }

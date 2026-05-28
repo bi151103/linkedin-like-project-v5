@@ -1,8 +1,10 @@
 import {
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
+  OnDestroy,
   OnInit,
   signal,
   viewChild,
@@ -12,7 +14,7 @@ import OverlayDirective from '../../components/overlay/overlay.component';
 import DialogComponent from '../../components/dialog/dialog.component';
 import SearchComboboxDialogComponent from '../../components/search-combobox-dialog/search-combobox-dialog.component';
 import FooterComponent from '../../components/footer/footer.component';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import UserInfoService from '../../services/user-info.service';
 import { UserInfo } from '../../services/models/user-info';
 import { Nullable } from '../../models';
@@ -22,6 +24,13 @@ import { ExperienceData } from '../../services/models/experience-data';
 import { MessageNotificationResponse } from '../../services/models/message-notification-response';
 import { NetworkNotificationResponse } from '../../services/models/network-notification-response';
 import { GeneralNotificationResponse } from '../../services/models/general-notification-response';
+import PrimaryButtonComponent from '../../components/primary-button/primary-button.component';
+import { Feature } from '../../services/models/feature';
+import IconButtonComponent from '../../components/icon-button/icon-button.component';
+import TwMergePipe from '../../directives/tw-merge.directive';
+import { SvgIconComponent } from 'angular-svg-icon';
+import { FormsModule } from '@angular/forms';
+import AddFeaturedStoreService from '../../services/add-featured-store.service';
 
 @Component({
   selector: 'app-profile',
@@ -33,6 +42,11 @@ import { GeneralNotificationResponse } from '../../services/models/general-notif
     FooterComponent,
     RouterLink,
     ProfileNamePipe,
+    PrimaryButtonComponent,
+    IconButtonComponent,
+    TwMergePipe,
+    SvgIconComponent,
+    FormsModule,
   ],
   template: `
     <app-header
@@ -109,14 +123,48 @@ import { GeneralNotificationResponse } from '../../services/models/general-notif
       <section class="mt-10px p-15px bg-white">
         <div class="flex">
           <h2>About</h2>
-          <a routerLink="edit-about" class="ml-auto">
-            <img
-              class="h-sm-img w-sm-img"
-              src="assets/images/icons8-edit-100.png"
-            />
-          </a>
+          @if (aboutData()) {
+            <a routerLink="edit-about" class="ml-auto">
+              <img
+                class="h-sm-img w-sm-img"
+                src="assets/images/icons8-edit-100.png"
+              />
+            </a>
+          }
         </div>
-        <p class="mt-10px">{{ aboutData() }}</p>
+        @if (aboutData()) {
+          <p class="mt-10px">{{ aboutData() }}</p>
+        } @else {
+          <button appPrimaryButton class="mt-10px" routerLink="edit-about">
+            Add summary
+          </button>
+        }
+      </section>
+    </ng-container>
+    <ng-container
+      ><section class="mt-10px p-15px bg-white">
+        <div class="flex">
+          <h2>Featured</h2>
+          @if (features().length > 0) {
+            <a routerLink="edit-featured" class="ml-auto">
+              <img
+                class="h-sm-img w-sm-img"
+                src="assets/images/icons8-edit-100.png"
+              />
+            </a>
+          }
+        </div>
+        <p class="mt-10px">
+          Some content is only available on desktop or in the LinkedIn App.
+          <a href="https://github.com/bi151103" target="_blank">Open in app</a>
+        </p>
+        <button
+          appPrimaryButton
+          class="mt-10px"
+          (click)="addFeaturedDialogVisible.set(true)"
+        >
+          Add featured
+        </button>
       </section>
     </ng-container>
     <app-footer
@@ -131,15 +179,78 @@ import { GeneralNotificationResponse } from '../../services/models/general-notif
         <app-search-combobox-dialog></app-search-combobox-dialog>
       </app-dialog>
     </div>
+    <div appOverlay [hasBackdrop]="true">
+      <app-dialog
+        [isVisible]="addFeaturedDialogVisible()"
+        (closeDialog)="addFeaturedDialogVisible.set(false)"
+        [closableOnBackdropCLick]="true"
+      >
+        <div
+          [class]="
+            [
+              'absolute bottom-0 h-[240px] w-full rounded-t-[16px] bg-white duration-[0.1s]',
+              shouldHideAddFeaturedOverlay()
+                ? 'translate-y-[240px]'
+                : 'translate-y-0',
+            ] | twMerge
+          "
+        >
+          <div class="p-15px flex">
+            <h1 class="text-emphasis-tx">Select a file type</h1>
+            <button
+              class="ml-auto"
+              appIconButton
+              btnType="x-close"
+              iconSize="sm-img"
+              (click)="addFeaturedDialogVisible.set(false)"
+            ></button>
+          </div>
+          <ul
+            class="p-15px *:py-15px *:w-full *:rounded-[24px] *:hover:bg-[rgba(0,0,0,0.04)]"
+          >
+            @for (action of addFeaturedActionsList; track action.name) {
+              <li class="*:text-inherit">
+                <button
+                  class="block flex w-full items-center"
+                  (click)="action.action()"
+                >
+                  <svg-icon
+                    [src]="action.svgSrc"
+                    svgClass="w-sm-img h-sm-img"
+                  ></svg-icon>
+                  <span class="ml-10px">{{ action.name }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+          <input
+            type="file"
+            [hidden]="true"
+            accept="image/jpeg,image/jpg,image/png"
+            #imageInput
+            [(ngModel)]="featureImgInputValue"
+          />
+          <input
+            type="file"
+            [hidden]="true"
+            accept=".doc,.docx,.pdf"
+            [(ngModel)]="featureDocInputValue"
+            #documentInput
+          />
+        </div>
+      </app-dialog>
+    </div>
   `,
   host: {
     class: 'block py-50px',
   },
 })
-export class ProfilePage implements OnInit {
-  searchDialogVisible = signal(false);
+export class ProfilePage implements OnInit, OnDestroy {
   userInfoService = inject(UserInfoService);
   profileService = inject(ProfileService);
+  addFeatureStoreService = inject(AddFeaturedStoreService);
+  router = inject(Router);
+
   userInfo = signal<Nullable<UserInfo>>(null);
   experiences = signal<ExperienceData[]>([]);
   connectionCount = signal<number>(0);
@@ -149,13 +260,79 @@ export class ProfilePage implements OnInit {
   networkNotifications = signal<Nullable<NetworkNotificationResponse>>(null);
   generalNotifications = signal<Nullable<GeneralNotificationResponse>>(null);
   aboutData = signal<string>('');
+  features = signal<Feature[]>([]);
+
+  searchDialogVisible = signal(false);
+  addFeaturedDialogVisible = signal(false);
+
+  shouldHideAddFeaturedOverlay = signal(true);
+
+  addFeaturedImgInput =
+    viewChild.required<ElementRef<HTMLInputElement>>('imageInput');
+  addFeaturedDocInput =
+    viewChild.required<ElementRef<HTMLInputElement>>('documentInput');
+
+  addFeaturedActionsList: {
+    name: string;
+    svgSrc: string;
+    action: () => void;
+  }[] = [
+    {
+      name: 'Add a photo',
+      svgSrc: 'assets/icons/icons8-image-100.svg',
+      action: () => {
+        this.addFeaturedImgInput().nativeElement.click();
+      },
+    },
+    {
+      name: 'Upload a document',
+      svgSrc: 'assets/icons/icons8-blank-document-100.svg',
+      action: () => {
+        this.addFeaturedDocInput().nativeElement.click();
+      },
+    },
+    {
+      name: 'Add a link',
+      svgSrc: 'assets/icons/icons8-link-100.svg',
+      action: () => {
+        this.router.navigate(['add-featured']);
+      },
+    },
+  ];
+  featureImgInputValue = signal<Nullable<File>>(null);
+  featureDocInputValue = signal<Nullable<File>>(null);
+
+  constructor() {
+    effect((onCleanUp) => {
+      const isVisible = this.addFeaturedDialogVisible();
+
+      const rAF = requestAnimationFrame(() => {
+        this.shouldHideAddFeaturedOverlay.set(!isVisible);
+      });
+
+      onCleanUp(() => {
+        cancelAnimationFrame(rAF);
+      });
+    });
+
+    effect(() => {
+      if (this.featureImgInputValue() || this.featureDocInputValue()) {
+        const files = this.addFeaturedImgInput().nativeElement.files;
+        if (files) {
+        }
+        this.router.navigate(['/add-featured']);
+      }
+    });
+  }
 
   showSearchComboboxDialog() {
     this.searchDialogVisible.set(true);
   }
+
   hideSearchComboboxDialog() {
     this.searchDialogVisible.set(false);
   }
+
   async shareProfileInfo() {
     try {
       const shareData = {
@@ -192,5 +369,18 @@ export class ProfilePage implements OnInit {
       await this.profileService.getGeneralNotifications(),
     );
     this.aboutData.set((await this.profileService.getAboutData()).data);
+    this.features.set((await this.profileService.getFeaturesData()).data);
+  }
+
+  ngOnDestroy() {
+    this.addFeatureStoreService.profilePageVisited.set(true);
+    const imgFiles = this.addFeaturedImgInput().nativeElement.files;
+    const docFiles = this.addFeaturedDocInput().nativeElement.files;
+    if (imgFiles) {
+      this.addFeatureStoreService.imgInputFile.set(imgFiles[0]);
+    }
+    if (docFiles) {
+      this.addFeatureStoreService.docInputFile.set(docFiles[0]);
+    }
   }
 }

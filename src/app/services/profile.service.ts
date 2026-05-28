@@ -9,6 +9,8 @@ import { GeneralNotificationResponse } from './models/general-notification-respo
 import { EducationResponse } from './models/education-response';
 import { About } from './models/about';
 import { UpdateResponse } from './models/update-response';
+import { FeaturesResponse } from './models/feature-response';
+import { CreateFeatureRequest } from './models/create-feature-request';
 
 @Injectable({ providedIn: 'root' })
 export default class ProfileService extends BaseService {
@@ -91,6 +93,46 @@ export default class ProfileService extends BaseService {
     });
     const response = await fetch(request);
     const json = (await response.json()) as UpdateResponse;
+    return json;
+  }
+
+  async getFeaturesData(): Promise<FeaturesResponse> {
+    const apiUrl = `${this.rootUrl}/features`;
+    const response = await fetch(apiUrl);
+    const json = (await response.json()) as FeaturesResponse;
+    return json;
+  }
+
+  async addFeature(input: CreateFeatureRequest): Promise<UpdateResponse> {
+    const apiUrl = `${this.rootUrl}/features`;
+
+    const formData = new FormData();
+    formData.append('name', input.name);
+
+    if (input.description) {
+      formData.append('description', input.description);
+    }
+
+    formData.append('type', input.type);
+
+    if (input.type === 'media') {
+      if (!input.file) {
+        throw new Error('Missing file');
+      }
+      formData.append('file', input.file);
+    } else if (input.type === 'link') {
+      if (!input.value) {
+        throw new Error('Missing link');
+      }
+      formData.append('value', input.value);
+    }
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const json = await response.json();
     return json;
   }
 }

@@ -13,16 +13,25 @@ import DialogComponent from '../dialog/dialog.component';
 import ProfileService from '../../services/profile.service';
 import { SvgIconComponent } from 'angular-svg-icon';
 import OverlayDirective from '../overlay/overlay.component';
+import IconButtonComponent from '../icon-button/icon-button.component';
 
 @Component({
   selector: 'app-search-combobox-dialog',
-  imports: [SvgIconComponent, OverlayDirective, DialogComponent],
+  imports: [
+    SvgIconComponent,
+    OverlayDirective,
+    DialogComponent,
+    IconButtonComponent,
+  ],
   template: `
     <ng-container>
       <div class="h-50px flex items-center">
         <button
+          appIconButton
+          iconSize="30"
           (click)="onCloseDialog()"
-          class="min-w-md-img w-md-img flex h-full items-center justify-center"
+          addClass="min-w-md-img w-md-img"
+          btnType="back"
         >
           <img
             src="assets/images/icons8-left-100.png"
