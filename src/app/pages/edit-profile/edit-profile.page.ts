@@ -42,12 +42,7 @@ import FormLeavingConfirmationDialogComponent from '../../components/form-leavin
         (backClick)="form.onLeaveForm('/')"
         [isSaveBtnDisabled]="!isFormValid() || !form.isDirty()"
       ></app-edit-page-header>
-      <form
-        class="px-15px py-10px bg-white"
-        (submit)="$event.preventDefault()"
-        appForm
-        #form="appForm"
-      >
+      <form class="px-15px py-10px bg-white" appForm #form="appForm">
         <app-profile-input
           type="firstName"
           [inputValue]="userInfo()?.firstName ?? ''"
@@ -198,14 +193,6 @@ export default class EditProfilePage implements OnInit {
       });
     }
   }
-
-  // onLeaveForm() {
-  //   if (this.form().isDirty()) {
-  //     this.form().confirmOnLeavingDialogVisible.set(true);
-  //   } else {
-  //     this.router.navigate(['/']);
-  //   }
-  // }
 
   async ngOnInit() {
     this.userInfo.set(await this.userInfoService.getUserInfo());

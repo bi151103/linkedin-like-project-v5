@@ -1,7 +1,9 @@
 import {
   ComponentRef,
   Directive,
+  ElementRef,
   inject,
+  Renderer2,
   signal,
   TemplateRef,
   ViewContainerRef,
@@ -13,6 +15,8 @@ import { Nullable } from '../models';
 @Directive({ selector: '[appForm]', host: {}, exportAs: 'appForm' })
 export default class FormDirective {
   vcf = inject(ViewContainerRef);
+  formEleRef: ElementRef<HTMLFormElement> = inject(ElementRef<HTMLFormElement>);
+  private renderer = inject(Renderer2);
   formLeavingConfirmationDialogComponentRef: Nullable<
     ComponentRef<FormLeavingConfirmationDialogComponent>
   > = null;
@@ -22,6 +26,13 @@ export default class FormDirective {
   confirmOnLeavingDialogVisible = signal(false);
 
   constructor() {
+    this.renderer.listen(
+      this.formEleRef.nativeElement,
+      'click',
+      (e: SubmitEvent) => {
+        e.preventDefault();
+      },
+    );
     if (this.formLeavingConfirmationDialogComponentRef) return;
     this.formLeavingConfirmationDialogComponentRef = this.vcf.createComponent(
       FormLeavingConfirmationDialogComponent,
