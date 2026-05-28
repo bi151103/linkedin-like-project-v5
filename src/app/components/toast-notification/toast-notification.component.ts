@@ -6,6 +6,7 @@ import {
   ElementRef,
   input,
   model,
+  OnDestroy,
   output,
   signal,
   viewChild,
@@ -87,7 +88,7 @@ export type ToastNotificationType = 'success' | 'error' | 'warning';
   styles: ``,
   host: {},
 })
-export default class ToastNotificationComponent {
+export default class ToastNotificationComponent implements OnDestroy {
   isVisible = model(false);
   closeBy = input.required<'swiping' | 'clickingCloseBtn'>();
   type = model.required<ToastNotificationType>();

@@ -18,8 +18,9 @@ import { Education } from '../../services/models/education';
 import UserInfoService from '../../services/user-info.service';
 import TwMergePipe from '../../directives/tw-merge.directive';
 import FloatingButtonInputComponent from '../../directives/floating-button-input.component';
+import FloatingInputLabelDirective from '../../directives/floating-input-label.directive';
 
-export type fieldType =
+export type FieldType =
   | 'firstName'
   | 'lastName'
   | 'headline'
@@ -27,6 +28,8 @@ export type fieldType =
   | 'industry'
   | 'location'
   | 'country';
+
+export type TextBoxInputType = 'input' | 'textarea';
 
 @Component({
   selector: 'app-profile-input',
@@ -37,6 +40,7 @@ export type fieldType =
     CdkConnectedOverlay,
     TwMergePipe,
     FloatingButtonInputComponent,
+    FloatingInputLabelDirective,
   ],
   template: `
     <ng-container>
@@ -52,37 +56,53 @@ export type fieldType =
         cdkOverlayOrigin
         (click)="isEducationDropdownOpen.set(true)"
       >
-        <input
-          [id]="type()"
-          [(ngModel)]="inputValue"
-          #input
-          autocomplete="off"
-          type="text"
-          [class]="
-            [
-              'text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full',
-              shouldShowInputError() ? 'outline-error' : '',
-            ] | twMerge
-          "
-          (blur)="lossFocus.set(true)"
-          (focus)="lossFocus.set(false)"
-          (input)="onInput()"
-          [name]="type()"
-        />
-        <label
-          [for]="type()"
-          #label
-          [class]="
-            [
-              'text-low-emphasis-tx top-5px left-15px absolute duration-[0.1s]',
-              shouldFloatLabel()
-                ? 'text-xs-small'
-                : 'text-medium top-[calc(5px+1.2rem)]',
-            ] | twMerge
-          "
-          (click)="onLabelClick()"
-          >{{ textConfigs().label }}</label
-        >
+        @if (textBoxType() === 'input') {
+          <input
+            [id]="type()"
+            [(ngModel)]="inputValue"
+            #input
+            autocomplete="off"
+            type="text"
+            [class]="
+              [
+                'text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full',
+                shouldShowInputError() ? 'outline-error' : '',
+              ] | twMerge
+            "
+            (blur)="lossFocus.set(true)"
+            (focus)="lossFocus.set(false)"
+            (input)="onInput()"
+            [name]="type()"
+            *appFloatingInputLabel="
+              textConfigs().label;
+              labelFor: type();
+              shouldFloatLabel: shouldFloatLabel()
+            "
+          />
+        } @else {
+          <textarea
+            [id]="type()"
+            [(ngModel)]="inputValue"
+            #input
+            autocomplete="off"
+            type="text"
+            [class]="
+              [
+                'text-emphasis-tx pt-20px pb-10px pl-15px pr-50px text-medium w-full',
+                shouldShowInputError() ? 'outline-error' : '',
+              ] | twMerge
+            "
+            (blur)="lossFocus.set(true)"
+            (focus)="lossFocus.set(false)"
+            (input)="onInput()"
+            [name]="type()"
+            *appFloatingInputLabel="
+              textConfigs().label;
+              labelFor: type();
+              shouldFloatLabel: shouldFloatLabel()
+            "
+          ></textarea>
+        }
         @if (type() === 'education') {
           <button
             class="right-15px absolute top-0 bottom-0"
@@ -143,13 +163,13 @@ export type fieldType =
   host: { class: 'block not-first:mt-10px' },
 })
 export default class ProfileInputComponent implements OnInit {
+  textBoxType = input<TextBoxInputType>('input');
   userInfoService = inject(UserInfoService);
   inputValue = model.required<string>();
   inputContainerEle =
     viewChild.required<ElementRef<HTMLElement>>('inputContainer');
-  labelEle = viewChild.required<ElementRef<HTMLLabelElement>>('label');
   inputEleRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
-  type = input.required<fieldType>();
+  type = input.required<FieldType>();
   isRequired = input(false);
   clearable = input<boolean>(false);
   lossFocus = signal(true);
@@ -169,7 +189,7 @@ export default class ProfileInputComponent implements OnInit {
   );
   textConfigs = computed(() => {
     const field = this.type();
-    const configs: Record<fieldType, { label: string; error?: string }> = {
+    const configs: Record<FieldType, { label: string; error?: string }> = {
       firstName: {
         label: 'First name',
         error: 'Please enter your first name.',
