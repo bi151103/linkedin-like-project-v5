@@ -5,14 +5,12 @@ import {
   inject,
   OnInit,
   signal,
-  TemplateRef,
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
 import UserInfoService from '../../services/user-info.service';
 import { Nullable } from '../../models';
 import { UserInfo } from '../../services/models/user-info';
-import ButtonComponent from '../../components/button/button.component';
 import { Router, RouterLink } from '@angular/router';
 import ProfileInputComponent from '../../components/profile-input/profile-input.component';
 import ProfileService from '../../services/profile.service';
@@ -24,16 +22,16 @@ import FullscreenLoadingComponent from '../../components/fullscreen-loading/full
 import { UpdateResponse } from '../../services/models/update-response';
 import ToastNotificationComponent from '../../components/toast-notification/toast-notification.component';
 import EditPageHeaderComponent from '../../components/edit-page-header/edit-page-header.component';
+import FormDirective from '../../directives/form.directive';
+import FormLeavingConfirmationDialogComponent from '../../components/form-leaving-confirmation-dialog/form-leaving-confirmation-dialog.component';
 
 @Component({
   selector: 'app-edit-profile',
   imports: [
-    RouterLink,
     ProfileInputComponent,
-    OverlayDirective,
-    DialogComponent,
     FullscreenLoadingComponent,
     EditPageHeaderComponent,
+    FormDirective,
   ],
   template: `
     <app-fullscreen-loading [isVisible]="saving()"></app-fullscreen-loading>
@@ -41,17 +39,22 @@ import EditPageHeaderComponent from '../../components/edit-page-header/edit-page
       <app-edit-page-header
         type="edit-profile"
         (saveClick)="saveProfileChanges()"
-        (backClick)="onLeaveForm()"
-        [isSaveBtnDisabled]="!isFormValid() || !isDirty()"
+        (backClick)="form.onLeaveForm('/')"
+        [isSaveBtnDisabled]="!isFormValid() || !form.isDirty()"
       ></app-edit-page-header>
-      <form class="px-15px py-10px bg-white" (submit)="$event.preventDefault()">
+      <form
+        class="px-15px py-10px bg-white"
+        (submit)="$event.preventDefault()"
+        appForm
+        #form="appForm"
+      >
         <app-profile-input
           type="firstName"
           [inputValue]="userInfo()?.firstName ?? ''"
           [isRequired]="true"
           [clearable]="true"
           #firstName
-          (dirty)="isDirty.set(true)"
+          (dirty)="form.isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="lastName"
@@ -59,13 +62,13 @@ import EditPageHeaderComponent from '../../components/edit-page-header/edit-page
           [isRequired]="true"
           [clearable]="true"
           #lastName
-          (dirty)="isDirty.set(true)"
+          (dirty)="form.isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="headline"
           [inputValue]="userInfo()?.headline ?? ''"
           [clearable]="true"
-          (dirty)="isDirty.set(true)"
+          (dirty)="form.isDirty.set(true)"
           #headline
         ></app-profile-input>
         <!-- Business constraint: If the educations list is empty, it means the profile hasn't added any education to the profile info, then we should hide the education and Show education checkbox field-->
@@ -77,7 +80,7 @@ import EditPageHeaderComponent from '../../components/edit-page-header/edit-page
             "
             [educationList]="educationList()"
             #education
-            (dirty)="isDirty.set(true)"
+            (dirty)="form.isDirty.set(true)"
           ></app-profile-input>
           <div class="mt-10px px-5px flex items-center">
             <input
@@ -85,7 +88,7 @@ import EditPageHeaderComponent from '../../components/edit-page-header/edit-page
               class="h-[2rem] w-[2rem] align-middle"
               type="checkbox"
               name="educationShow"
-              (change)="isDirty.set(true)"
+              (change)="form.isDirty.set(true)"
               [checked]="userInfo()?.showEducation"
               #educationShow
             />
@@ -100,7 +103,7 @@ import EditPageHeaderComponent from '../../components/edit-page-header/edit-page
           [isRequired]="true"
           [clearable]="true"
           #industry
-          (dirty)="isDirty.set(true)"
+          (dirty)="form.isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="country"
@@ -108,42 +111,16 @@ import EditPageHeaderComponent from '../../components/edit-page-header/edit-page
           [isRequired]="true"
           [clearable]="true"
           #country
-          (dirty)="isDirty.set(true)"
+          (dirty)="form.isDirty.set(true)"
         ></app-profile-input>
         <app-profile-input
           type="location"
           [inputValue]="userInfo()?.location ?? ''"
           [clearable]="true"
           #location
-          (dirty)="isDirty.set(true)"
+          (dirty)="form.isDirty.set(true)"
         ></app-profile-input>
       </form>
-    </ng-container>
-    <ng-container>
-      <div appOverlay [hasBackdrop]="true">
-        <app-dialog
-          [isVisible]="confirmOnLeavingDialogVisible()"
-          (closeDialog)="confirmOnLeavingDialogVisible.set(false)"
-          [closableOnBackdropCLick]="true"
-        >
-          <div
-            class="p-24px fixed top-0 right-0 bottom-0 left-0 z-1003 m-auto h-min max-h-[70vh] w-[70vw] min-w-[300px] overflow-y-auto rounded-[8px] bg-white"
-          >
-            <h1 class="text-emphasis-tx font-medium">Leaving?</h1>
-            <p class="mt-10px text-medium text-emphasis-tx">
-              Are you sure to discard the changes?
-            </p>
-            <div
-              class="mt-15px *:h:[48px] text-medium flex justify-end *:inline-block *:px-[24px] *:py-[12px] *:text-inherit"
-            >
-              <button (click)="confirmOnLeavingDialogVisible.set(false)">
-                Stay
-              </button>
-              <button routerLink="/">Leave</button>
-            </div>
-          </div>
-        </app-dialog>
-      </div>
     </ng-container>
   `,
   host: {
@@ -156,7 +133,6 @@ export default class EditProfilePage implements OnInit {
   profileService = inject(ProfileService);
   userInfo = signal<Nullable<UserInfo>>(null);
   educationList = signal<Education[]>([]);
-  isDirty = signal(false);
   isFormValid = computed(
     () =>
       this.firstNameInput().isValid() &&
@@ -166,13 +142,13 @@ export default class EditProfilePage implements OnInit {
       this.countryInput().isValid() &&
       this.locationInput().isValid(),
   );
-  confirmOnLeavingDialogVisible = signal(false);
   router = inject(Router);
   saving = signal(false);
   receiveResponse = signal(false);
 
   vcf = inject(ViewContainerRef);
 
+  form = viewChild.required('form', { read: FormDirective });
   firstNameInput = viewChild.required<ProfileInputComponent>('firstName');
   lastNameInput = viewChild.required<ProfileInputComponent>('lastName');
   headlineInput = viewChild.required<ProfileInputComponent>('headline');
@@ -203,7 +179,7 @@ export default class EditProfilePage implements OnInit {
       await this.userService.updateUserInfo(userInfo);
     if (response) {
       this.saving.set(false);
-      this.isDirty.set(false);
+      this.form().isDirty.set(false);
       this.userInfoService.changedSinceLastRetrieve.set(true);
 
       const compRef = this.vcf.createComponent(ToastNotificationComponent);
@@ -223,13 +199,13 @@ export default class EditProfilePage implements OnInit {
     }
   }
 
-  onLeaveForm() {
-    if (this.isDirty()) {
-      this.confirmOnLeavingDialogVisible.set(true);
-    } else {
-      this.router.navigate(['/']);
-    }
-  }
+  // onLeaveForm() {
+  //   if (this.form().isDirty()) {
+  //     this.form().confirmOnLeavingDialogVisible.set(true);
+  //   } else {
+  //     this.router.navigate(['/']);
+  //   }
+  // }
 
   async ngOnInit() {
     this.userInfo.set(await this.userInfoService.getUserInfo());
