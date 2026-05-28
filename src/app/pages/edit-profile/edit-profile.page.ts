@@ -20,6 +20,7 @@ import ToastNotificationComponent from '../../components/toast-notification/toas
 import EditPageHeaderComponent from '../../components/edit-page-header/edit-page-header.component';
 import FormDirective from '../../directives/form.directive';
 import UserService from '../../services/user.service';
+import ToastNotificationService from '../../services/toast-notification.service';
 
 @Component({
   selector: 'app-edit-profile',
@@ -122,6 +123,7 @@ export default class EditProfilePage implements OnInit {
   userInfoService = inject(UserInfoService);
   userService = inject(UserService);
   profileService = inject(ProfileService);
+  toastService = inject(ToastNotificationService);
   userInfo = signal<Nullable<UserInfo>>(null);
   educationList = signal<Education[]>([]);
   isFormValid = computed(
@@ -171,19 +173,10 @@ export default class EditProfilePage implements OnInit {
       this.form().isDirty.set(false);
       this.userInfoService.changedSinceLastRetrieve.set(true);
 
-      const compRef = this.vcf.createComponent(ToastNotificationComponent);
-      compRef.instance.isVisible.set(true);
-      compRef.instance.message.set(response.message);
-      compRef.instance.type.set(
-        response.status === 'success' ? 'success' : 'error',
-      );
-      // compRef.setInput('closeBy', 'clickingCloseBtn');
-      compRef.setInput('closeBy', 'swiping');
-      compRef.instance.closeToast.subscribe(() => {
-        compRef.instance.isVisible.set(false);
-        setTimeout(() => {
-          compRef.destroy(); //destroy component after 1s being invisible
-        }, 1000);
+      this.toastService.create(this.vcf, {
+        type: response.status === 'success' ? 'success' : 'error',
+        message: response.message,
+        closeBy: 'swiping',
       });
     }
   }
