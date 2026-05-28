@@ -11,7 +11,11 @@ export type EditPageType = 'edit-profile' | 'edit-about';
       <div
         class="h-50px border-separator-line fixed top-0 flex w-full items-center border-b bg-white"
       >
-        <button appButton btnType="back" (click)="backClick.emit()"></button>
+        <button
+          appButton
+          btnType="back"
+          (click)="backClick.emit(contentConfigs().backTo)"
+        ></button>
         <h1 class="text-emphasis-tx px-15px">{{ contentConfigs().title }}</h1>
         <button
           [disabled]="isSaveBtnDisabled()"
@@ -41,6 +45,6 @@ export default class EditPageHeaderComponent {
     };
     return configs[this.type()];
   });
-  backClick = output();
+  backClick = output<string>();
   saveClick = output();
 }

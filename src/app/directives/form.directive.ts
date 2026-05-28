@@ -1,6 +1,7 @@
 import {
   ComponentRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   Renderer2,
@@ -33,16 +34,21 @@ export default class FormDirective {
         e.preventDefault();
       },
     );
-    if (this.formLeavingConfirmationDialogComponentRef) return;
-    this.formLeavingConfirmationDialogComponentRef = this.vcf.createComponent(
-      FormLeavingConfirmationDialogComponent,
-    );
-    this.formLeavingConfirmationDialogComponentRef.setInput('form', this);
   }
 
   onLeaveForm(backToPath: string) {
     if (this.isDirty()) {
       this.confirmOnLeavingDialogVisible.set(true);
+      if (this.confirmOnLeavingDialogVisible()) {
+        if (this.formLeavingConfirmationDialogComponentRef) return;
+        this.formLeavingConfirmationDialogComponentRef =
+          this.vcf.createComponent(FormLeavingConfirmationDialogComponent);
+        this.formLeavingConfirmationDialogComponentRef.setInput('form', this);
+        this.formLeavingConfirmationDialogComponentRef.setInput(
+          'backToPath',
+          backToPath,
+        );
+      }
     } else {
       this.router.navigate([backToPath]);
     }

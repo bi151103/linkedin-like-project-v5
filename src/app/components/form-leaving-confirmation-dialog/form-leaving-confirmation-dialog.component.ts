@@ -1,11 +1,12 @@
-import { Component, input, model } from '@angular/core';
+import { Component, input, model, viewChild } from '@angular/core';
 import OverlayDirective from '../overlay/overlay.component';
 import DialogComponent from '../dialog/dialog.component';
 import FormDirective from '../../directives/form.directive';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-form-leaving-confirmation-dialog',
-  imports: [OverlayDirective, DialogComponent],
+  imports: [OverlayDirective, DialogComponent, RouterLink],
   template: `
     <ng-container>
       <div appOverlay [hasBackdrop]="true">
@@ -27,7 +28,7 @@ import FormDirective from '../../directives/form.directive';
               <button (click)="form().confirmOnLeavingDialogVisible.set(false)">
                 Stay
               </button>
-              <button routerLink="/">Leave</button>
+              <button [routerLink]="backToPath()">Leave</button>
             </div>
           </div>
         </app-dialog>
@@ -37,5 +38,6 @@ import FormDirective from '../../directives/form.directive';
   host: {},
 })
 export default class FormLeavingConfirmationDialogComponent {
+  backToPath = input.required<string>();
   form = input.required<FormDirective>();
 }

@@ -11,19 +11,16 @@ import {
 import UserInfoService from '../../services/user-info.service';
 import { Nullable } from '../../models';
 import { UserInfo } from '../../services/models/user-info';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import ProfileInputComponent from '../../components/profile-input/profile-input.component';
 import ProfileService from '../../services/profile.service';
 import { Education } from '../../services/models/education';
-import UserService from '../../services/user.service';
-import OverlayDirective from '../../components/overlay/overlay.component';
-import DialogComponent from '../../components/dialog/dialog.component';
 import FullscreenLoadingComponent from '../../components/fullscreen-loading/fullscreen-loading.component';
 import { UpdateResponse } from '../../services/models/update-response';
 import ToastNotificationComponent from '../../components/toast-notification/toast-notification.component';
 import EditPageHeaderComponent from '../../components/edit-page-header/edit-page-header.component';
 import FormDirective from '../../directives/form.directive';
-import FormLeavingConfirmationDialogComponent from '../../components/form-leaving-confirmation-dialog/form-leaving-confirmation-dialog.component';
+import UserService from '../../services/user.service';
 
 @Component({
   selector: 'app-edit-profile',
@@ -39,7 +36,7 @@ import FormLeavingConfirmationDialogComponent from '../../components/form-leavin
       <app-edit-page-header
         type="edit-profile"
         (saveClick)="saveProfileChanges()"
-        (backClick)="form.onLeaveForm('/')"
+        (backClick)="form.onLeaveForm($event)"
         [isSaveBtnDisabled]="!isFormValid() || !form.isDirty()"
       ></app-edit-page-header>
       <form class="px-15px py-10px bg-white" appForm #form="appForm">
