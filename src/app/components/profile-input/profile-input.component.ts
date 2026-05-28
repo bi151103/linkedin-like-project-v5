@@ -30,7 +30,8 @@ export type FieldType =
   | 'country'
   | 'about'
   | 'featured-name'
-  | 'featured-description';
+  | 'featured-description'
+  | 'link';
 
 export type TextBoxInputType = 'input' | 'textarea';
 
@@ -157,7 +158,7 @@ export type TextBoxInputType = 'input' | 'textarea';
           }
         }
       </div>
-      @if (shouldShowInputError()) {
+      @if (shouldShowInputError() && textConfigs().error) {
         <span class="text-error text-xs-small ml-15px">{{
           textConfigs().error
         }}</span>
@@ -216,6 +217,9 @@ export default class ProfileInputComponent implements OnInit {
       },
       'featured-description': {
         label: 'Description (optional)',
+      },
+      link: {
+        label: 'Link',
       },
     };
     return configs[field] || { label: '', error: '' };

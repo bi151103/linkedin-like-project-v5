@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  ElementRef,
   inject,
   model,
   OnDestroy,
@@ -19,7 +20,7 @@ import { CreateFeatureRequest } from '../../services/models/create-feature-reque
 import { UpdateResponse } from '../../services/models/update-response';
 import ProfileService from '../../services/profile.service';
 import ToastNotificationService from '../../services/toast-notification.service';
-
+import * as pdfjsLib from 'pdfjs-dist';
 export type AddFeaturedType =
   | 'add-featured-image'
   | 'add-featured-document'
@@ -44,25 +45,33 @@ export type AddFeaturedType =
         (saveClick)="handleAddFeatured()"
       ></app-form-page-header>
       <div class="px-15px py-10px">
-        <img
-          [src]="blobPreviewSrc()"
-          class="aspect-[2] h-[171px] object-cover"
-        />
-        <form class="mt-[24px] bg-white" appForm #form="appForm">
+        <canvas #canvas class="hidden"></canvas>
+        @if (type() !== 'add-featured-link') {
+          <img
+            [src]="blobPreviewSrc()"
+            class="mb-[24px] aspect-[2] h-[171px] object-cover"
+          />
+        }
+        <form class="bg-white" appForm #form="appForm">
           <app-profile-input
-            type="featured-name"
+            [type]="type() === 'add-featured-link' ? 'link' : 'featured-name'"
             [inputValue]="featuredName()"
             #featureNameInput
             [isRequired]="true"
             [clearable]="true"
             textBoxType="input"
-          ></app-profile-input
-          ><app-profile-input
-            type="featured-description"
-            [inputValue]="description()"
-            #descriptionInput
-            textBoxType="textarea"
           ></app-profile-input>
+          @if (type() === 'add-featured-link') {
+            <p class="text-xs-small">Paste or type a link to a file or video</p>
+          }
+          @if (type() !== 'add-featured-link') {
+            <app-profile-input
+              type="featured-description"
+              [inputValue]="description()"
+              #descriptionInput
+              textBoxType="textarea"
+            ></app-profile-input>
+          }
         </form>
       </div>
     </ng-container>
@@ -83,14 +92,16 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
   description = signal('');
   saving = signal(false);
 
+  canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+
   isFormValid = computed(() => this.featuredNameInput().isValid());
 
   form = viewChild.required('form', { read: FormDirective });
   featuredNameInput =
     viewChild.required<ProfileInputComponent>('featureNameInput');
-  descInput = viewChild.required<ProfileInputComponent>('descriptionInput');
+  descInput = viewChild<ProfileInputComponent>('descriptionInput');
 
-  ngOnInit() {
+  async ngOnInit() {
     if (this.addFeatureStoreService.profilePageVisited()) {
       const imgInputFile = this.addFeatureStoreService.imgInputFile();
       const docInputFile = this.addFeatureStoreService.docInputFile();
@@ -104,6 +115,29 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
         this.blobPreviewSrc.set(URL.createObjectURL(docInputFile));
         this.featuredName.set(docInputFile.name);
         this.form().isDirty.set(true);
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'assets/pdf.worker.min.js';
+        const loadingTask = pdfjsLib.getDocument(this.blobPreviewSrc());
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 1 });
+
+        const canvas = this.canvasRef().nativeElement;
+        const canvasContext = canvas.getContext('2d');
+        if (!canvasContext) {
+          return;
+        }
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({
+          canvasContext,
+          viewport,
+        }).promise;
+
+        const imageUrl = canvas.toDataURL('image/png');
+
+        this.blobPreviewSrc.set(imageUrl);
       } else {
         this.type.set('add-featured-link');
       }
@@ -115,7 +149,7 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
   async handleAddFeatured() {
     const createFeatureReq: CreateFeatureRequest = {
       name: this.featuredNameInput().inputValue(),
-      description: this.descInput().inputValue(),
+      description: this.descInput()?.inputValue(),
       type: ['add-featured-image', 'add-featured-document'].includes(
         this.type(),
       )
