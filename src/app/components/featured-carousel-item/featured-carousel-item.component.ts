@@ -53,7 +53,7 @@ import * as pdfjsLib from 'pdfjs-dist';
           </svg-icon>
         </button>
       </div>
-      <p class="text-emphasis-tx overflow-hidden font-medium text-ellipsis">
+      <p class="text-emphasis-tx line-clamp-1 font-medium">
         <ng-content></ng-content>
       </p>
     </ng-container>
