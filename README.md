@@ -212,7 +212,7 @@ http://localhost:4200
 ## Local server
 
 To run the local server, clone this repo and run `npm start`:
-- [[Version 1]([https://github.com/bi151103/linkedin-like-project](https://github.com/bi151103/linkedin-like-project-v4-server))](https://github.com/bi151103/linkedin-like-project-v4-server)
+- https://github.com/bi151103/linkedin-like-project-v4-server
 
 ## Previous versions
 
