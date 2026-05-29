@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { SvgIconComponent } from 'angular-svg-icon';
-import TwMergePipe from '../../directives/tw-merge.directive';
+import TwMergePipe from '../../pipes/tw-merge.pipe';
 
 export type IconButtonType = 'back' | 'x-close';
 

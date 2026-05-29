@@ -14,7 +14,7 @@ import {
 import OverlayDirective from '../overlay/overlay.component';
 import DialogComponent from '../dialog/dialog.component';
 import { CdkDrag, CdkDragEnd, CdkDragMove } from '@angular/cdk/drag-drop';
-import TwMergePipe from '../../directives/tw-merge.directive';
+import TwMergePipe from '../../pipes/tw-merge.pipe';
 import TimeMilToSecPipe from '../../pipes/time-mili-to-sec.pipe';
 import { SvgIconComponent } from 'angular-svg-icon';
 

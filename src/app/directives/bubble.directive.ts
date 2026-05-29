@@ -1,5 +1,5 @@
 import { computed, Directive, inject, input } from '@angular/core';
-import TwMergePipe from './tw-merge.directive';
+import TwMergePipe from '../pipes/tw-merge.pipe';
 
 @Directive({
   selector: 'span[appBubble]',

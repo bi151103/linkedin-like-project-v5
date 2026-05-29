@@ -28,7 +28,7 @@ import { GeneralNotificationResponse } from '../../services/models/general-notif
 import PrimaryButtonComponent from '../../components/primary-button/primary-button.component';
 import { Feature } from '../../services/models/feature';
 import IconButtonComponent from '../../components/icon-button/icon-button.component';
-import TwMergePipe from '../../directives/tw-merge.directive';
+import TwMergePipe from '../../pipes/tw-merge.pipe';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import AddFeaturedStoreService from '../../services/add-featured-store.service';

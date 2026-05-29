@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { CdkOverlayOrigin, CdkConnectedOverlay } from '@angular/cdk/overlay';
 import { Education } from '../../services/models/education';
 import UserInfoService from '../../services/user-info.service';
-import TwMergePipe from '../../directives/tw-merge.directive';
+import TwMergePipe from '../../pipes/tw-merge.pipe';
 import FloatingButtonInputComponent from '../../directives/floating-button-input.component';
 import FloatingInputLabelDirective from '../../directives/floating-input-label.directive';
 

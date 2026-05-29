@@ -8,7 +8,7 @@ import {
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
-import TwMergePipe from './tw-merge.directive';
+import TwMergePipe from '../pipes/tw-merge.pipe';
 import { Nullable } from '../models';
 
 @Directive({
