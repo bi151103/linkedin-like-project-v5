@@ -34,10 +34,11 @@ Example:
 # profile.page
   <img style="width: 200px;" alt="bi151103 github io_linkedin-like-project-v5_(iPhone SE)" src="https://github.com/user-attachments/assets/9c7204ab-6e2e-4c31-8fa5-3f41f7aaca74" />
 
-# edit-info.page - form valid but the submit button is still disabled as the form has not been dirty
-  <img style="width: 200px;"  alt="bi151103 github io_linkedin-like-project-v5_(iPhone SE)" src="https://github.com/user-attachments/assets/19176151-3e89-49f5-8d5e-e9395687501d" />
+# edit-info.page - form is valid but the submit button is still disabled as the form has not been dirty
+  <img style="width: 200px;"  alt="image" src="https://github.com/user-attachments/assets/0f760df1-b77e-4a3f-b835-c05602dcba4f" />
 
-# edit-info.page - trigger validation and show error on required fields the submit button is disabled
+
+# edit-info.page - trigger validation and show error on required fields, the submit button is disabled
   <img style="width: 200px;"  alt="bi151103 github io_linkedin-like-project-v5_(iPhone SE) (5)" src="https://github.com/user-attachments/assets/37dfb5f4-158b-4e54-85c8-fa2fe44a0b8c" />
 
 # edit-info.page - select from menu dialog
@@ -46,10 +47,10 @@ Example:
 # edit-info.page - show leaving confirmation dialog when form becomes dirty
   <img style="width: 200px;"  alt="bi151103 github io_linkedin-like-project-v5_(iPhone SE) (7)" src="https://github.com/user-attachments/assets/d912a64c-6cd6-4ebd-92d0-e78ca25aef53" />
 
-# edit-info.page = form becomes valid and is able to be submitted
+# edit-info.page - form becomes valid and is able to be submitted
   <img style="width: 200px;"  alt="bi151103 github io_linkedin-like-project-v5_(iPhone SE) (8)" src="https://github.com/user-attachments/assets/03900f69-b2db-41db-be0f-5660e2362317" />
 
-# edit-info.page - submission makes the form not dirty and a success toast is shown and then disappears after 5s (this can be closed by swiping the toast to downward), the submit button is disabled as the first is not dirty at this time
+# edit-info.page - submission makes the form not dirty and a success toast is shown and then disappears after 5s (this can be closed by swiping the toast downward), the submit button is disabled as the form is not dirty at this time
   <img style="width: 200px;"  alt="image" src="https://github.com/user-attachments/assets/190c46bc-9d90-43e9-9bed-978834d833a8" />
 
 # edit-info.page - multiple toast notifications can be shown stacking on each other when the form is submitted multiple times
@@ -81,7 +82,7 @@ Example:
 ### edit-about.page
   <img style="width: 200px;" alt="bi151103 github io_linkedin-like-project-v5_(iPhone SE) (12)" src="https://github.com/user-attachments/assets/8c1d68c6-64a6-414c-981e-f506ab3b22c6" />
 
-### full-screen-loading - trigger to show when making an API call
+### full-screen-loading - is triggered to show when making an API call
   <img style="width: 200px;"  alt="image" src="https://github.com/user-attachments/assets/a9338ebc-3bfc-4c9a-9db0-b2799a81a2b6" />
 
 ### not-found.page
