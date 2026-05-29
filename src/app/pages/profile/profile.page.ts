@@ -34,6 +34,8 @@ import { FormsModule } from '@angular/forms';
 import AddFeaturedStoreService from '../../services/add-featured-store.service';
 import FeaturedCarouselItemComponent from '../../components/featured-carousel-item/featured-carousel-item.component';
 
+type DotItem = { isActive: boolean; clickAction: () => void };
+
 @Component({
   selector: 'app-profile',
   imports: [
@@ -145,11 +147,11 @@ import FeaturedCarouselItemComponent from '../../components/featured-carousel-it
       </section>
     </ng-container>
     <ng-container
-      ><section class="mt-10px p-15px bg-white">
+      ><section class="mt-10px p-15px relative bg-white">
         <div class="flex">
           <h2>Featured</h2>
           @if (features().length) {
-            <a routerLink="edit-featured" class="ml-auto">
+            <a routerLink="/edit-featured" class="ml-auto">
               <img
                 class="h-sm-img w-sm-img"
                 src="assets/images/icons8-edit-100.png"
@@ -175,10 +177,7 @@ import FeaturedCarouselItemComponent from '../../components/featured-carousel-it
               (scroll)="updatePaginatorDotState($event)"
             >
               @for (featured of features(); track featured.id) {
-                <li
-                  class="block h-full snap-start snap-always"
-                  [id]="'featured-' + featured.id"
-                >
+                <li class="block h-full snap-start snap-always" #featuredItem>
                   <app-featured-carousel-item
                     [link]="featured.value"
                     [thumbSrc]="
@@ -189,6 +188,13 @@ import FeaturedCarouselItemComponent from '../../components/featured-carousel-it
                     [type]="featured.type"
                   >
                     {{ featured.name }}
+                  </app-featured-carousel-item>
+                </li>
+              }
+              @if (shouldShowFeaturedCarouselPlaceholder()) {
+                <li class="block h-full snap-start snap-always" #featuredItem>
+                  <app-featured-carousel-item type="placeholder">
+                    See all
                   </app-featured-carousel-item>
                 </li>
               }
@@ -203,8 +209,21 @@ import FeaturedCarouselItemComponent from '../../components/featured-carousel-it
                     dot.isActive ? 'bg-black' : '',
                   ] | twMerge
                 "
+                (click)="dot.clickAction()"
               ></span>
             }
+          </div>
+          <div
+            class="right-15px bottom-10px absolute flex items-center font-medium"
+          >
+            See all
+            <button
+              routerLink="/edit-featured"
+              appIconButton
+              btnType="back"
+              iconSize="sm-img"
+              class="ml-5px *:rotate-180"
+            ></button>
           </div>
         }
       </section>
@@ -288,25 +307,7 @@ import FeaturedCarouselItemComponent from '../../components/featured-carousel-it
   },
 })
 export class ProfilePage implements OnInit, OnDestroy {
-  updatePaginatorDotState(event: Event) {
-    const target = event.target;
-    if (!target) return;
-    const featuredItems = (target as HTMLElement).children;
-    let firstActiveItemIdx = 0;
-    for (; firstActiveItemIdx < featuredItems.length; firstActiveItemIdx++) {
-      if (
-        (
-          featuredItems.item(firstActiveItemIdx) as HTMLElement
-        ).getBoundingClientRect().x >= 0
-      ) {
-        break;
-      }
-    }
-    this.dotsList()[
-      this.dotsList().findIndex((e) => e.isActive === true)
-    ].isActive = false;
-    this.dotsList()[firstActiveItemIdx].isActive = true;
-  }
+  readonly NUMBER_OF_CAROUSEL_ITEM_DISPLAYED = 5;
   userInfoService = inject(UserInfoService);
   profileService = inject(ProfileService);
   addFeatureStoreService = inject(AddFeaturedStoreService);
@@ -321,18 +322,43 @@ export class ProfilePage implements OnInit, OnDestroy {
   generalNotifications = signal<Nullable<GeneralNotificationResponse>>(null);
   aboutData = signal<string>('');
   features = signal<Feature[]>([]);
-  dotsList = computed<{ isActive: boolean }[]>(() => {
+  dotsList = computed<DotItem[]>(() => {
     if (this.features().length === 0) return [];
-    let dotsList: { isActive: boolean }[] = [];
+    let dotsList: DotItem[] = [];
     for (let i = 0; i < this.features().length; i++) {
-      dotsList.push({ isActive: false });
+      dotsList.push({
+        isActive: false,
+        clickAction: () => {
+          const correspondingFeaturedItem =
+            this.featuresItems()[i].nativeElement;
+          correspondingFeaturedItem.scrollIntoView({
+            behavior: 'smooth',
+            inline: 'start',
+          });
+        },
+      });
     }
     dotsList[0].isActive = true;
+    if (this.shouldShowFeaturedCarouselPlaceholder()) {
+      dotsList.push({
+        isActive: false,
+        clickAction: () => {
+          const correspondingFeaturedItem =
+            this.featuresItems()[this.NUMBER_OF_CAROUSEL_ITEM_DISPLAYED]
+              .nativeElement;
+          correspondingFeaturedItem.scrollIntoView({
+            behavior: 'smooth',
+            inline: 'start',
+          });
+        },
+      });
+    }
     return dotsList;
   });
+  shouldShowFeaturedCarouselPlaceholder = signal(false);
 
   shareProfileBtn = viewChild.required<ElementRef<HTMLElement>>('shareBtn');
-  dragEles = viewChildren<ElementRef<HTMLLIElement>>('dragEle');
+  featuresItems = viewChildren<ElementRef<HTMLElement>>('featuredItem');
 
   searchDialogVisible = signal(false);
   addFeaturedDialogVisible = signal(false);
@@ -418,6 +444,26 @@ export class ProfilePage implements OnInit, OnDestroy {
     }
   }
 
+  updatePaginatorDotState(event: Event) {
+    const target = event.target;
+    if (!target) return;
+    const featuredItems = (target as HTMLElement).children;
+    let firstActiveItemIdx = 0;
+    for (; firstActiveItemIdx < featuredItems.length; firstActiveItemIdx++) {
+      if (
+        (
+          featuredItems.item(firstActiveItemIdx) as HTMLElement
+        ).getBoundingClientRect().x >= 0
+      ) {
+        break;
+      }
+    }
+    this.dotsList()[
+      this.dotsList().findIndex((e) => e.isActive === true)
+    ].isActive = false;
+    this.dotsList()[firstActiveItemIdx].isActive = true;
+  }
+
   async ngOnInit() {
     this.userInfo.set(await this.userInfoService.getUserInfo());
     this.experiences.set(await this.profileService.getExperiences());
@@ -441,7 +487,21 @@ export class ProfilePage implements OnInit, OnDestroy {
       await this.profileService.getGeneralNotifications(),
     );
     this.aboutData.set((await this.profileService.getAboutData()).data);
-    this.features.set((await this.profileService.getFeaturesData()).data);
+    this.features.set(
+      (await this.profileService.getFeaturesData()).data.slice(
+        0,
+        Math.min(
+          this.NUMBER_OF_CAROUSEL_ITEM_DISPLAYED,
+          (await this.profileService.getFeaturesData()).count,
+        ),
+      ),
+    );
+    if (
+      (await this.profileService.getFeaturesData()).count >
+      this.NUMBER_OF_CAROUSEL_ITEM_DISPLAYED
+    ) {
+      this.shouldShowFeaturedCarouselPlaceholder.set(true);
+    }
   }
 
   ngOnDestroy() {
