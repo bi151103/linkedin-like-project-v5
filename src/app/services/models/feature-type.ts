@@ -1,1 +1,3 @@
-export type FeatureType = 'link' | 'media';
+import { MediaType } from './media-type';
+
+export type FeatureType = 'link' | MediaType;

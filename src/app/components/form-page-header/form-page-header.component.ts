@@ -60,6 +60,10 @@ export default class FormPageHeaderComponent {
         backTo: '/',
         title: 'Add a link',
       },
+      'add-featured-link-name': {
+        backTo: '/',
+        title: 'Add media',
+      },
     };
     return configs[this.type()];
   });

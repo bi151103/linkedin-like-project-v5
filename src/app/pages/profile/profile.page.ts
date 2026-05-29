@@ -31,6 +31,7 @@ import TwMergePipe from '../../directives/tw-merge.directive';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import AddFeaturedStoreService from '../../services/add-featured-store.service';
+import FeaturedCarouselItemComponent from '../../components/featured-carousel-item/featured-carousel-item.component';
 
 @Component({
   selector: 'app-profile',
@@ -47,6 +48,7 @@ import AddFeaturedStoreService from '../../services/add-featured-store.service';
     TwMergePipe,
     SvgIconComponent,
     FormsModule,
+    FeaturedCarouselItemComponent,
   ],
   template: `
     <app-header
@@ -145,7 +147,7 @@ import AddFeaturedStoreService from '../../services/add-featured-store.service';
       ><section class="mt-10px p-15px bg-white">
         <div class="flex">
           <h2>Featured</h2>
-          @if (features().length > 0) {
+          @if (features().length) {
             <a routerLink="edit-featured" class="ml-auto">
               <img
                 class="h-sm-img w-sm-img"
@@ -165,6 +167,27 @@ import AddFeaturedStoreService from '../../services/add-featured-store.service';
         >
           Add featured
         </button>
+        @if (features().length) {
+          <div class="mt-10px">
+            <ul class="gap-20px flex h-[200px] overflow-y-auto">
+              @for (featured of features(); track featured.id) {
+                <li class="block h-full">
+                  <app-featured-carousel-item
+                    [link]="featured.value"
+                    [thumbSrc]="
+                      featured.type === 'link'
+                        ? (featured.linkThumbPath ?? '')
+                        : featured.value
+                    "
+                    [type]="featured.type"
+                  >
+                    {{ featured.name }}
+                  </app-featured-carousel-item>
+                </li>
+              }
+            </ul>
+          </div>
+        }
       </section>
     </ng-container>
     <app-footer

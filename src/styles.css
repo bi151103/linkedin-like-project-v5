@@ -3,6 +3,7 @@
 
 @theme {
   --color-primary-bg: #0a66c2;
+  --color-secondary-bg: #f3f2f0;
   --color-primary-tx: #5f6163;
   --color-emphasis-tx: #000000e6;
   --color-low-emphasis-tx: #00000099;
@@ -24,6 +25,7 @@
   --spacing-sm-img: 25px;
   --spacing-md-img: 50px;
   --spacing-sm-noti-bubble: 1.5rem;
+  --radius-xs: 4px;
   --radius-xl: 8px;
   --radius-2xl: 16px;
   --radius-3xl: 24px;

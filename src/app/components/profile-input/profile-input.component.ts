@@ -52,7 +52,7 @@ export type TextBoxInputType = 'input' | 'textarea';
         #inputContainer
         [class]="
           [
-            'relative rounded-[4px] border-[1.5px] border-[rgba(0,0,0,0.6)]',
+            'relative rounded-xs border-[1.5px] border-[rgba(0,0,0,0.6)]',
             shouldShowInputError() ? 'border-error' : '',
           ] | twMerge
         "
@@ -122,7 +122,7 @@ export type TextBoxInputType = 'input' | 'textarea';
             [cdkConnectedOverlayHasBackdrop]="true"
           >
             <div
-              class="text-small px-15px py-20px border-separator-line block max-h-[300px] w-[250px] rounded-[4px] border bg-white shadow-2xl"
+              class="text-small px-15px py-20px border-separator-line block max-h-[300px] w-[250px] rounded-xs border bg-white shadow-2xl"
             >
               <ul>
                 @for (education of educationList(); track education.id) {

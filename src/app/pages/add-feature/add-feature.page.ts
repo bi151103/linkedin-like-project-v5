@@ -24,7 +24,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 export type AddFeaturedType =
   | 'add-featured-image'
   | 'add-featured-document'
-  | 'add-featured-link';
+  | 'add-featured-link'
+  | 'add-featured-link-name';
 
 @Component({
   selector: 'app-add-featured',
@@ -47,10 +48,21 @@ export type AddFeaturedType =
       <div class="px-15px py-10px">
         <canvas #canvas class="hidden"></canvas>
         @if (type() !== 'add-featured-link') {
-          <img
-            [src]="blobPreviewSrc()"
-            class="mb-[24px] aspect-[2] h-[171px] object-cover"
-          />
+          <div
+            class="bg-secondary-bg mb-[24px] flex h-[171px] w-[342px] items-center justify-center rounded-xs"
+          >
+            @if (!!blobPreviewSrc()) {
+              <img
+                [src]="blobPreviewSrc()"
+                class="aspect-[2] h-full object-cover"
+              />
+            } @else {
+              <img
+                [src]="'assets/images/icons8-image-100.png'"
+                class="h-md-img aspect-square"
+              />
+            }
+          </div>
         }
         <form class="bg-white" appForm #form="appForm">
           <app-profile-input
@@ -91,6 +103,7 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
   blobPreviewSrc = signal('');
   description = signal('');
   saving = signal(false);
+  fromAddLink = signal(false);
 
   canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
 
@@ -100,6 +113,48 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
   featuredNameInput =
     viewChild.required<ProfileInputComponent>('featureNameInput');
   descInput = viewChild<ProfileInputComponent>('descriptionInput');
+
+  async handleAddFeatured() {
+    if (this.type() === 'add-featured-link') {
+      this.addFeatureStoreService.linkInputValue.set(
+        this.featuredNameInput().inputValue(),
+      );
+      this.router.navigate(['/add-featured'], {
+        onSameUrlNavigation: 'reload',
+      });
+    } else {
+      const createFeatureReq: CreateFeatureRequest = {
+        name: this.featuredNameInput().inputValue(),
+        description: this.descInput()?.inputValue(),
+        type:
+          this.type() === 'add-featured-image'
+            ? 'image'
+            : this.type() === 'add-featured-document'
+              ? 'document'
+              : 'link',
+        value: this.featuredNameInput().inputValue(),
+        file:
+          this.type() === 'add-featured-image'
+            ? this.addFeatureStoreService.imgInputFile()
+            : this.type() === 'add-featured-document'
+              ? this.addFeatureStoreService.docInputFile()
+              : undefined,
+      };
+      this.saving.set(true);
+      const response: UpdateResponse =
+        await this.profileService.addFeature(createFeatureReq);
+      if (response) {
+        this.saving.set(false);
+        this.router.navigate(['/']);
+
+        this.toastService.create(this.vcf, {
+          type: response.status === 'success' ? 'success' : 'error',
+          message: response.message,
+          closeBy: 'clickingCloseBtn',
+        });
+      }
+    }
+  }
 
   async ngOnInit() {
     if (this.addFeatureStoreService.profilePageVisited()) {
@@ -142,39 +197,15 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
         this.type.set('add-featured-link');
       }
     } else {
-      this.router.navigate(['/']);
-    }
-  }
-
-  async handleAddFeatured() {
-    const createFeatureReq: CreateFeatureRequest = {
-      name: this.featuredNameInput().inputValue(),
-      description: this.descInput()?.inputValue(),
-      type: ['add-featured-image', 'add-featured-document'].includes(
-        this.type(),
-      )
-        ? 'media'
-        : 'link',
-      value: this.featuredNameInput().inputValue(),
-      file:
-        this.type() === 'add-featured-image'
-          ? this.addFeatureStoreService.imgInputFile()
-          : this.type() === 'add-featured-document'
-            ? this.addFeatureStoreService.docInputFile()
-            : undefined,
-    };
-    this.saving.set(true);
-    const response: UpdateResponse =
-      await this.profileService.addFeature(createFeatureReq);
-    if (response) {
-      this.saving.set(false);
-      this.router.navigate(['/']);
-
-      this.toastService.create(this.vcf, {
-        type: response.status === 'success' ? 'success' : 'error',
-        message: response.message,
-        closeBy: 'clickingCloseBtn',
-      });
+      if (!!this.addFeatureStoreService.linkInputValue()) {
+        const parsed = new URL(this.addFeatureStoreService.linkInputValue());
+        this.featuredName.set(
+          `${parsed.protocol}//${parsed.hostname}${parsed.pathname}`,
+        );
+        this.type.set('add-featured-link-name');
+      } else {
+        this.router.navigate(['/']);
+      }
     }
   }
 

@@ -115,7 +115,7 @@ export default class ProfileService extends BaseService {
 
     formData.append('type', input.type);
 
-    if (input.type === 'media') {
+    if (input.type === 'image' || input.type === 'document') {
       if (!input.file) {
         throw new Error('Missing file');
       }
