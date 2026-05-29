@@ -87,7 +87,9 @@ export default class FeaturedCarouselItemComponent {
 
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'assets/pdf.worker.min.js';
 
-      const loadingTask = pdfjsLib.getDocument(this.thumbSrc());
+      const secureUrl = this.thumbSrc().replace('http://', 'https://');
+
+      const loadingTask = pdfjsLib.getDocument(secureUrl);
       const pdf = await loadingTask.promise;
       const page = await pdf.getPage(1);
       const viewport = page.getViewport({ scale: 1 });
