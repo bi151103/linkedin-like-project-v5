@@ -133,7 +133,7 @@ src/
  │    │    └── form-leaving-confirmation-dialog/
  │    ├── directives/
  │    │    ├── bubble.directive.ts // directive to show bubble number floating on the top right corner indicating number of messages
- │    │    ├── floating-button-input.directive.ts // directive to shown close button or dropdown button inside the input
+ │    │    ├── floating-button-input.directive.ts // directive to show close button or dropdown button inside the input
  │    │    ├── floating-input-label.directive.ts // directive to show floating label which changes position property when or not focusing on the input
  │    │    └── form.directive.ts // directive to watch the dirty state and check if the user leaves the form
  │    ├── models/
