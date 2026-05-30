@@ -1,4 +1,4 @@
-# LinkedIn Like Project v5 - 05/29/2026
+# LinkedIn Like Project v5 - 05/30/2026
 
 A frontend engineering project that recreates the LinkedIn Profile page experience using Angular 19 and TailwindCSS 4.
 
@@ -225,4 +225,8 @@ To run the local server, clone this repo and run `npm start`:
 ---
 
 ## Future improvements
-- TBU
+- 
+- Using HttpClient to call API.
+- Applying i18n for vietnamese and english.
+- Applying authentication and guard routing.
+- Implementing a Unit Test suite.
