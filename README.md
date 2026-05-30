@@ -225,7 +225,7 @@ To run the local server, clone this repo and run `npm start`:
 ---
 
 ## Future improvements
-- 
+- Displaying skeleton when loading.
 - Using HttpClient to call API.
 - Applying i18n for vietnamese and english.
 - Applying authentication and guard routing.
