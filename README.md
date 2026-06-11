@@ -111,7 +111,6 @@ Example:
 ### Tooling
 
 - GitHub Actions (AI support)
-- ESLint
 - Prettier
 
 ---
