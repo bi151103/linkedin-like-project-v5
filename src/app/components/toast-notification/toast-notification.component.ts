@@ -44,6 +44,11 @@ export type ToastClosingType = 'swiping' | 'clickingCloseBtn';
                     ? 'translate-0 opacity-100'
                     : 'translate-y-[100px] opacity-0',
                   shouldRemoveDurationClass() ? 'duration-0' : '',
+                  type() === 'success'
+                    ? 'text-success'
+                    : type() === 'error'
+                      ? 'text-error'
+                      : 'text-warning',
                 ] | twMerge
               "
               cdkDrag
@@ -53,7 +58,18 @@ export type ToastClosingType = 'swiping' | 'clickingCloseBtn';
               (cdkDragEnded)="onDropped()"
               #toastContainer
             >
-              <span class="w-5px bg-success mr-auto h-full"></span>
+              <span
+                [class]="
+                  [
+                    'w-5px mr-auto h-full',
+                    type() === 'success'
+                      ? 'bg-success'
+                      : type() === 'error'
+                        ? 'bg-error'
+                        : 'bg-warning',
+                  ] | twMerge
+                "
+              ></span>
               <span class="ml-10px px-10px grow">{{ message() }}</span>
               <span class="mr-20px text-emphasis-tx"
                 >{{ timer | timeMilToSec }}
@@ -63,15 +79,31 @@ export type ToastClosingType = 'swiping' | 'clickingCloseBtn';
             <div
               [class]="
                 [
-                  'h-50px bottom-40px text-success fixed right-0 left-0 mx-auto flex w-[80vw] translate-0 items-center bg-white font-medium opacity-100 shadow-2xl duration-500',
+                  'h-50px bottom-40px fixed right-0 left-0 mx-auto flex w-[80vw] translate-0 items-center bg-white font-medium opacity-100 shadow-2xl duration-500',
                   timer > 0 && isVisible()
                     ? 'translate-0 opacity-100'
                     : 'translate-y-[100px] opacity-0',
+                  type() === 'success'
+                    ? 'text-success'
+                    : type() === 'error'
+                      ? 'text-error'
+                      : 'text-warning',
                 ] | twMerge
               "
               #toastContainer
             >
-              <span class="w-5px bg-success mr-auto h-full"></span>
+              <span
+                [class]="
+                  [
+                    'w-5px mr-auto h-full',
+                    type() === 'success'
+                      ? 'bg-success'
+                      : type() === 'error'
+                        ? 'bg-error'
+                        : 'bg-warning',
+                  ] | twMerge
+                "
+              ></span>
               <span class="ml-10px px-10px grow">{{ message() }}</span>
               <button class="mr-20px" (click)="closeToast.emit()">
                 <svg-icon src="assets/icons/close-01.svg"></svg-icon>

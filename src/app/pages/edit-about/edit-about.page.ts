@@ -49,7 +49,7 @@ import ToastNotificationService from '../../services/toast-notification.service'
     class: 'block pt-50px h-screen bg-white',
   },
 })
-export default class EditAboutPage implements OnInit {
+export default class EditAboutPage {
   profileService = inject(ProfileService);
   aboutData = signal<string>('');
   saving = signal<boolean>(false);
@@ -66,21 +66,23 @@ export default class EditAboutPage implements OnInit {
       data: this.aboutInput().inputValue(),
     };
     this.saving.set(true);
-    const response: UpdateResponse =
-      await this.profileService.updateAboutData(aboutData);
-    if (response) {
-      this.saving.set(false);
-      this.form().isDirty.set(false);
+    this.profileService.updateAboutData(aboutData).subscribe((response) => {
+      if (response) {
+        this.saving.set(false);
+        this.form().isDirty.set(false);
 
-      this.toastService.create(this.vcf, {
-        type: response.status === 'success' ? 'success' : 'error',
-        message: response.message,
-        closeBy: 'swiping',
-      });
-    }
+        this.toastService.create(this.vcf, {
+          type: response.status === 'success' ? 'success' : 'error',
+          message: response.message,
+          closeBy: 'swiping',
+        });
+      }
+    });
   }
 
-  async ngOnInit() {
-    this.aboutData.set((await this.profileService.getAboutData()).data);
+  constructor() {
+    this.profileService.getAboutData().subscribe((data) => {
+      this.aboutData.set(data.data);
+    });
   }
 }

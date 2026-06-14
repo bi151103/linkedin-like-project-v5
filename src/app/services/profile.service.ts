@@ -11,99 +11,74 @@ import { About } from './models/about';
 import { UpdateResponse } from './models/update-response';
 import { FeaturesResponse } from './models/feature-response';
 import { CreateFeatureRequest } from './models/create-feature-request';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class ProfileService extends BaseService {
-  async getRecentSearch(): Promise<RecentSearchResponse> {
+  getRecentSearch(): Observable<RecentSearchResponse> {
     const apiUrl = `${this.rootUrl}/recent-search`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as RecentSearchResponse;
-    return json;
+    return this.http.get<RecentSearchResponse>(apiUrl);
   }
 
-  async clearRecentSearch(recentSearch: string[]): Promise<void> {
+  clearRecentSearch(recentSearch: string[]): Observable<UpdateResponse> {
     const apiUrl = `${this.rootUrl}/remove-recent-search`;
-    const request = new Request(apiUrl, {
-      body: JSON.stringify(recentSearch),
-      method: 'POST',
+    return this.http.post<UpdateResponse>(apiUrl, recentSearch, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    await fetch(request);
   }
 
-  async getExperiences(): Promise<ExperienceData[]> {
+  getExperiences(): Observable<ExperienceData[]> {
     const apiUrl = `${this.rootUrl}/experiences`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as ExperienceData[];
-    return json;
+    return this.http.get<ExperienceData[]>(apiUrl);
   }
 
-  async getConnections(): Promise<ConnectionResponse> {
+  getConnections(): Observable<ConnectionResponse> {
     const apiUrl = `${this.rootUrl}/connections`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as ConnectionResponse;
-    return json;
+    return this.http.get<ConnectionResponse>(apiUrl);
   }
 
-  async getMessageNotifications(): Promise<MessageNotificationResponse> {
+  getMessageNotifications(): Observable<MessageNotificationResponse> {
     const apiUrl = `${this.rootUrl}/notifications/messages`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as MessageNotificationResponse;
-    return json;
+    return this.http.get<MessageNotificationResponse>(apiUrl);
   }
 
-  async getNetworkNotifications(): Promise<NetworkNotificationResponse> {
+  getNetworkNotifications(): Observable<NetworkNotificationResponse> {
     const apiUrl = `${this.rootUrl}/notifications/network`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as NetworkNotificationResponse;
-    return json;
+    return this.http.get<NetworkNotificationResponse>(apiUrl);
   }
 
-  async getGeneralNotifications(): Promise<GeneralNotificationResponse> {
+  getGeneralNotifications(): Observable<GeneralNotificationResponse> {
     const apiUrl = `${this.rootUrl}/notifications/general`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as GeneralNotificationResponse;
-    return json;
+    return this.http.get<GeneralNotificationResponse>(apiUrl);
   }
 
-  async getEducations(): Promise<EducationResponse> {
+  getEducations(): Observable<EducationResponse> {
     const apiUrl = `${this.rootUrl}/educations`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as EducationResponse;
-    return json;
+    return this.http.get<EducationResponse>(apiUrl);
   }
 
-  async getAboutData(): Promise<About> {
+  getAboutData(): Observable<About> {
     const apiUrl = `${this.rootUrl}/about`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as About;
-    return json;
+    return this.http.get<About>(apiUrl);
   }
 
-  async updateAboutData(about: About): Promise<UpdateResponse> {
+  updateAboutData(about: About): Observable<UpdateResponse> {
     const apiUrl = `${this.rootUrl}/about`;
-    const request = new Request(apiUrl, {
-      body: JSON.stringify(about),
-      method: 'POST',
+    return this.http.post<UpdateResponse>(apiUrl, about, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    const response = await fetch(request);
-    const json = (await response.json()) as UpdateResponse;
-    return json;
   }
 
-  async getFeaturesData(): Promise<FeaturesResponse> {
+  getFeaturesData(): Observable<FeaturesResponse> {
     const apiUrl = `${this.rootUrl}/features`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as FeaturesResponse;
-    return json;
+    return this.http.get<FeaturesResponse>(apiUrl);
   }
 
-  async addFeature(input: CreateFeatureRequest): Promise<UpdateResponse> {
+  addFeature(input: CreateFeatureRequest): Observable<UpdateResponse> {
     const apiUrl = `${this.rootUrl}/features`;
 
     const formData = new FormData();
@@ -127,12 +102,10 @@ export default class ProfileService extends BaseService {
       formData.append('value', input.value);
     }
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: formData,
+    return this.http.post<UpdateResponse>(apiUrl, formData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
-
-    const json = await response.json();
-    return json;
   }
 }

@@ -141,18 +141,18 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
               : undefined,
       };
       this.saving.set(true);
-      const response: UpdateResponse =
-        await this.profileService.addFeature(createFeatureReq);
-      if (response) {
-        this.saving.set(false);
-        this.router.navigate(['/']);
+      this.profileService.addFeature(createFeatureReq).subscribe((response) => {
+        if (response) {
+          this.saving.set(false);
+          this.router.navigate(['/']);
 
-        this.toastService.create(this.vcf, {
-          type: response.status === 'success' ? 'success' : 'error',
-          message: response.message,
-          closeBy: 'clickingCloseBtn',
-        });
-      }
+          this.toastService.create(this.vcf, {
+            type: response.status === 'success' ? 'success' : 'error',
+            message: response.message,
+            closeBy: 'clickingCloseBtn',
+          });
+        }
+      });
     }
   }
 

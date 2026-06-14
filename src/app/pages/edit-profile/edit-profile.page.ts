@@ -120,7 +120,7 @@ import ToastNotificationService from '../../services/toast-notification.service'
     class: 'block pt-50px h-screen bg-white',
   },
 })
-export default class EditProfilePage implements OnInit {
+export default class EditProfilePage {
   userInfoService = inject(UserInfoService);
   userService = inject(UserService);
   profileService = inject(ProfileService);
@@ -167,23 +167,28 @@ export default class EditProfilePage implements OnInit {
       location: this.locationInput().inputValue(),
     };
     this.saving.set(true);
-    const response: UpdateResponse =
-      await this.userService.updateUserInfo(userInfo);
-    if (response) {
-      this.saving.set(false);
-      this.form().isDirty.set(false);
-      this.userInfoService.changedSinceLastRetrieve.set(true);
+    this.userService.updateUserInfo(userInfo).subscribe((response) => {
+      if (response) {
+        this.saving.set(false);
+        this.form().isDirty.set(false);
+        this.userInfoService.changedSinceLastRetrieve.set(true);
 
-      this.toastService.create(this.vcf, {
-        type: response.status === 'success' ? 'success' : 'error',
-        message: response.message,
-        closeBy: 'swiping',
-      });
-    }
+        this.toastService.create(this.vcf, {
+          type: response.status === 'success' ? 'success' : 'error',
+          message: response.message,
+          closeBy: 'swiping',
+        });
+      }
+    });
   }
 
-  async ngOnInit() {
-    this.userInfo.set(await this.userInfoService.getUserInfo());
-    this.educationList.set((await this.profileService.getEducations()).data);
+  constructor() {
+    this.userInfoService.getUserInfo().subscribe((data) => {
+      this.userInfo.set(data);
+    });
+
+    this.profileService.getEducations().subscribe((data) => {
+      this.educationList.set(data.data);
+    });
   }
 }

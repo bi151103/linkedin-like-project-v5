@@ -8,12 +8,14 @@ import {
   output,
   signal,
   viewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import DialogComponent from '../dialog/dialog.component';
 import ProfileService from '../../services/profile.service';
 import { SvgIconComponent } from 'angular-svg-icon';
 import OverlayDirective from '../overlay/overlay.component';
 import IconButtonComponent from '../icon-button/icon-button.component';
+import ToastNotificationService from '../../services/toast-notification.service';
 
 @Component({
   selector: 'app-search-combobox-dialog',
@@ -107,9 +109,14 @@ import IconButtonComponent from '../icon-button/icon-button.component';
 })
 export default class SearchComboboxDialogComponent {
   dialogComponent = inject(DialogComponent);
-  searchInput = viewChild.required<ElementRef<HTMLElement>>('searchInput');
-  closeDialogOutput = output<boolean>();
   profileService = inject(ProfileService);
+  toastService = inject(ToastNotificationService);
+  vcf = inject(ViewContainerRef);
+
+  searchInput = viewChild.required<ElementRef<HTMLElement>>('searchInput');
+
+  closeDialogOutput = output<boolean>();
+
   recentSearch = signal<string[]>([]);
   clearSearchDialogVisible = signal(false);
 
@@ -117,7 +124,7 @@ export default class SearchComboboxDialogComponent {
     effect(() => {
       if (this.dialogComponent.isVisible()) {
         this.searchInput().nativeElement.focus();
-        this.profileService.getRecentSearch().then((data) => {
+        this.profileService.getRecentSearch().subscribe((data) => {
           this.recentSearch.set(data.data);
         });
       }
@@ -130,8 +137,18 @@ export default class SearchComboboxDialogComponent {
   }
 
   async onContinue() {
-    await this.profileService.clearRecentSearch(this.recentSearch());
-    this.recentSearch.set([]);
+    this.profileService
+      .clearRecentSearch(this.recentSearch())
+      .subscribe((response) => {
+        if (response.status === 'success') {
+          this.recentSearch.set([]);
+        } else {
+          this.toastService.create(this.vcf, {
+            type: 'error',
+            message: response.message,
+          });
+        }
+      });
     this.clearSearchDialogVisible.set(false);
   }
 }

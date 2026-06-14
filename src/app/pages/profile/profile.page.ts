@@ -306,7 +306,7 @@ type DotItem = { isActive: boolean; clickAction: () => void };
     class: 'block py-50px',
   },
 })
-export class ProfilePage implements OnInit, OnDestroy {
+export class ProfilePage implements OnDestroy {
   readonly NUMBER_OF_CAROUSEL_ITEM_DISPLAYED = 5;
   userInfoService = inject(UserInfoService);
   profileService = inject(ProfileService);
@@ -401,6 +401,53 @@ export class ProfilePage implements OnInit, OnDestroy {
   featureDocInputValue = signal<Nullable<File>>(null);
 
   constructor() {
+    this.userInfoService.getUserInfo().subscribe((data) => {
+      this.userInfo.set(data);
+    });
+
+    this.profileService.getExperiences().subscribe((data) => {
+      this.experiences.set(data);
+      this.recentCompanyExp.set(
+        this.experiences().sort(
+          (a, b) =>
+            new Date(b.experiences[0].duration.start).getTime() -
+            new Date(a.experiences[0].duration.start).getTime(),
+        )[0].company.companyName,
+      );
+    });
+
+    this.profileService.getConnections().subscribe((data) => {
+      this.connectionCount.set(data.count);
+    });
+
+    this.profileService.getMessageNotifications().subscribe((data) => {
+      this.messageNotifications.set(data);
+    });
+
+    this.profileService.getNetworkNotifications().subscribe((data) => {
+      this.networkNotifications.set(data);
+    });
+
+    this.profileService.getGeneralNotifications().subscribe((data) => {
+      this.generalNotifications.set(data);
+    });
+
+    this.profileService.getAboutData().subscribe((data) => {
+      this.aboutData.set(data.data);
+    });
+
+    this.profileService.getFeaturesData().subscribe((data) => {
+      this.features.set(
+        data.data.slice(
+          0,
+          Math.min(this.NUMBER_OF_CAROUSEL_ITEM_DISPLAYED, data.count),
+        ),
+      );
+      if (data.count > this.NUMBER_OF_CAROUSEL_ITEM_DISPLAYED) {
+        this.shouldShowFeaturedCarouselPlaceholder.set(true);
+      }
+    });
+
     effect((onCleanUp) => {
       const isVisible = this.addFeaturedDialogVisible();
 
@@ -462,46 +509,6 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.dotsList().findIndex((e) => e.isActive === true)
     ].isActive = false;
     this.dotsList()[firstActiveItemIdx].isActive = true;
-  }
-
-  async ngOnInit() {
-    this.userInfo.set(await this.userInfoService.getUserInfo());
-    this.experiences.set(await this.profileService.getExperiences());
-    this.recentCompanyExp.set(
-      this.experiences().sort(
-        (a, b) =>
-          new Date(b.experiences[0].duration.start).getTime() -
-          new Date(a.experiences[0].duration.start).getTime(),
-      )[0].company.companyName,
-    );
-    this.connectionCount.set(
-      (await this.profileService.getConnections()).count,
-    );
-    this.messageNotifications.set(
-      await this.profileService.getMessageNotifications(),
-    );
-    this.networkNotifications.set(
-      await this.profileService.getNetworkNotifications(),
-    );
-    this.generalNotifications.set(
-      await this.profileService.getGeneralNotifications(),
-    );
-    this.aboutData.set((await this.profileService.getAboutData()).data);
-    this.features.set(
-      (await this.profileService.getFeaturesData()).data.slice(
-        0,
-        Math.min(
-          this.NUMBER_OF_CAROUSEL_ITEM_DISPLAYED,
-          (await this.profileService.getFeaturesData()).count,
-        ),
-      ),
-    );
-    if (
-      (await this.profileService.getFeaturesData()).count >
-      this.NUMBER_OF_CAROUSEL_ITEM_DISPLAYED
-    ) {
-      this.shouldShowFeaturedCarouselPlaceholder.set(true);
-    }
   }
 
   ngOnDestroy() {

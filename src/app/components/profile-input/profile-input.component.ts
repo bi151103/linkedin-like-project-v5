@@ -167,7 +167,7 @@ export type TextBoxInputType = 'input' | 'textarea';
   `,
   host: { class: 'block not-first:mt-10px' },
 })
-export default class ProfileInputComponent implements OnInit {
+export default class ProfileInputComponent {
   textBoxType = input<TextBoxInputType>('input');
   userInfoService = inject(UserInfoService);
   inputValue = model.required<string>();
@@ -256,9 +256,9 @@ export default class ProfileInputComponent implements OnInit {
     }
   }
 
-  async ngOnInit() {
-    this.selectedEducationId.set(
-      (await this.userInfoService.getUserInfo()).education?.id,
-    );
+  constructor() {
+    this.userInfoService.getUserInfo().subscribe((data) => {
+      this.selectedEducationId.set(data.education?.id);
+    });
   }
 }

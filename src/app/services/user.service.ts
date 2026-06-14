@@ -2,27 +2,21 @@ import { Injectable } from '@angular/core';
 import BaseService from './base-service';
 import { UserInfo } from './models/user-info';
 import { UpdateResponse } from './models/update-response';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class UserService extends BaseService {
-  async getUserInfo(): Promise<UserInfo> {
+  getUserInfo(): Observable<UserInfo> {
     const apiUrl = `${this.rootUrl}/user/info`;
-    const response = await fetch(apiUrl);
-    const json = (await response.json()) as UserInfo;
-    return json;
+    return this.http.get<UserInfo>(apiUrl);
   }
 
-  async updateUserInfo(userInfo: UserInfo): Promise<UpdateResponse> {
+  updateUserInfo(userInfo: UserInfo): Observable<UpdateResponse> {
     const apiUrl = `${this.rootUrl}/user/info`;
-    const request = new Request(apiUrl, {
-      body: JSON.stringify(userInfo),
-      method: 'POST',
+    return this.http.post<UpdateResponse>(apiUrl, userInfo, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    const response = await fetch(request);
-    const json = (await response.json()) as UpdateResponse;
-    return json;
   }
 }
