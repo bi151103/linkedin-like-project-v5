@@ -2,22 +2,22 @@ import { inject, Injectable, signal } from '@angular/core';
 import UserService from './user.service';
 import { Optional } from '../models';
 import { UserInfo } from './models/user-info';
-import { map, Observable } from 'rxjs';
+import { map, Observable, shareReplay } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class UserInfoService {
   userService = inject(UserService);
-  userInfoObs$?: Observable<UserInfo>;
   changedSinceLastRetrieve = signal<boolean>(false);
+  userInfo$?: Observable<UserInfo>;
 
   getUserInfo(): Observable<UserInfo> {
-    if (!this.userInfoObs$) {
-      this.userInfoObs$ = this.userService.getUserInfo();
-    } else if (this.changedSinceLastRetrieve()) {
-      this.userService.getUserInfo().subscribe();
-      this.userInfoObs$ = this.userService.getUserInfo();
+    if (!this.userInfo$) {
+      this.userInfo$ = this.userService.getUserInfo().pipe(shareReplay(1));
+    }
+    if (this.changedSinceLastRetrieve()) {
+      this.userInfo$ = this.userService.getUserInfo().pipe(shareReplay(1));
       this.changedSinceLastRetrieve.set(false);
     }
-    return this.userInfoObs$;
+    return this.userInfo$;
   }
 }
