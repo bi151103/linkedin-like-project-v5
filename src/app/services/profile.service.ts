@@ -102,10 +102,6 @@ export default class ProfileService extends BaseService {
       formData.append('value', input.value);
     }
 
-    return this.http.post<UpdateResponse>(apiUrl, formData, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    return this.http.post<UpdateResponse>(apiUrl, formData);
   }
 }
