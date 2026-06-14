@@ -44,23 +44,23 @@ import { RouterLink } from '@angular/router';
                   class="w-md-img aspect-square"
                 />
               }
+              <button
+                class="w-40px h-40px border-separator-line absolute right-0 bottom-0 flex items-center justify-center border bg-white"
+              >
+                <svg-icon
+                  [src]="
+                    type() === 'link'
+                      ? 'assets/icons/icons8-new-tab.svg'
+                      : type() === 'image'
+                        ? 'assets/icons/icons8-image-100.svg'
+                        : 'assets/icons/icons8-blank-document-100.svg'
+                  "
+                  svgClass="w-25px h-25px"
+                >
+                </svg-icon>
+              </button>
             </a>
           </div>
-          <button
-            class="w-40px h-40px absolute right-0 bottom-0 flex items-center justify-center bg-white"
-          >
-            <svg-icon
-              [src]="
-                type() === 'link'
-                  ? 'assets/icons/icons8-new-tab.svg'
-                  : type() === 'image'
-                    ? 'assets/icons/icons8-image-100.svg'
-                    : 'assets/icons/icons8-blank-document-100.svg'
-              "
-              svgClass="w-25px h-25px"
-            >
-            </svg-icon>
-          </button>
         </div>
         <p class="text-emphasis-tx line-clamp-1 font-medium">
           <ng-content></ng-content>

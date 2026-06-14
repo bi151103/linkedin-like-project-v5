@@ -3,6 +3,7 @@ import {
   computed,
   Directive,
   effect,
+  inject,
   input,
   signal,
 } from '@angular/core';
@@ -11,6 +12,7 @@ import { NetworkNotification } from '../../services/models/network-notification'
 import { GeneralNotification } from '../../services/models/general-notification';
 import { Optional } from '../../models';
 import { BubbleDirective } from '../../directives/bubble.directive';
+import ProfileService from '../../services/profile.service';
 
 export type navType = 'home' | 'network' | 'post' | 'noti' | 'job';
 
@@ -122,6 +124,18 @@ export class FooterItemComponent {
   },
 })
 export default class FooterComponent {
-  networkNotifications = input<Optional<NetworkNotification[]>>([]);
-  generalNotifications = input<Optional<GeneralNotification[]>>([]);
+  profileService = inject(ProfileService);
+
+  networkNotifications = signal<Optional<NetworkNotification[]>>([]);
+  generalNotifications = signal<Optional<GeneralNotification[]>>([]);
+
+  constructor() {
+    this.profileService.getNetworkNotifications().subscribe((data) => {
+      this.networkNotifications.set(data.data);
+    });
+
+    this.profileService.getGeneralNotifications().subscribe((data) => {
+      this.generalNotifications.set(data.data);
+    });
+  }
 }

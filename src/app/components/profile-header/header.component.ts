@@ -1,8 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MessageNotification } from '../../services/models/message-notification';
 import { Optional } from '../../models';
 import { BubbleDirective } from '../../directives/bubble.directive';
+import ProfileService from '../../services/profile.service';
 
 @Component({
   selector: 'app-header',
@@ -56,10 +57,18 @@ import { BubbleDirective } from '../../directives/bubble.directive';
   },
 })
 export default class HeaderComponent {
+  profileService = inject(ProfileService);
+
   onShowSearchComboboxDialog = output();
-  messageNotifications = input<Optional<MessageNotification[]>>([]);
+  messageNotifications = signal<Optional<MessageNotification[]>>([]);
 
   onOpenSearchComboboxDialog() {
     this.onShowSearchComboboxDialog.emit();
+  }
+
+  constructor() {
+    this.profileService.getMessageNotifications().subscribe((data) => {
+      this.messageNotifications.set(data.data);
+    });
   }
 }

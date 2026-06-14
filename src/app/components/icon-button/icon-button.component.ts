@@ -4,7 +4,7 @@ import TwMergePipe from '../../pipes/tw-merge.pipe';
 
 export type IconButtonType = 'back' | 'x-close';
 
-export type IconButtonSize = string;
+export type IconButtonSize = 'md-img' | 'sm-img' | string;
 
 @Component({
   selector: 'button[appIconButton]',

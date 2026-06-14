@@ -16,6 +16,9 @@ import { SvgIconComponent } from 'angular-svg-icon';
 import OverlayDirective from '../overlay/overlay.component';
 import IconButtonComponent from '../icon-button/icon-button.component';
 import ToastNotificationService from '../../services/toast-notification.service';
+import { Observable } from 'rxjs';
+import TwMergePipe from '../../pipes/tw-merge.pipe';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-search-combobox-dialog',
@@ -24,6 +27,7 @@ import ToastNotificationService from '../../services/toast-notification.service'
     OverlayDirective,
     DialogComponent,
     IconButtonComponent,
+    TwMergePipe,
   ],
   template: `
     <ng-container>
@@ -42,9 +46,23 @@ import ToastNotificationService from '../../services/toast-notification.service'
         </button>
         <input
           #searchInput
+          (input)="searchInputValue.set(searchInput.value)"
+          (keydown.enter)="onSearchEnter()"
+          [value]="searchInputValue()"
           placeholder="Search"
           class="pl-20px pr-10px text-medium text-emphasis-tx basis-[calc(100%-100px)] rounded-[2px] pt-[4px] font-bold focus:outline-2"
+          type="search"
         />
+        <button
+          appIconButton
+          iconSize="sm-img"
+          btnType="x-close"
+          [addClass]="
+            ['min-w-md-img w-md-img', searchInputValue() ? '' : 'hidden']
+              | twMerge
+          "
+          (click)="searchInputValue.set('')"
+        ></button>
       </div>
       <div class="p-15px flex justify-between">
         <h3 class="text-emphasis-tx font-medium">Recent search</h3>
@@ -108,10 +126,12 @@ import ToastNotificationService from '../../services/toast-notification.service'
   },
 })
 export default class SearchComboboxDialogComponent {
+  router = inject(Router);
   dialogComponent = inject(DialogComponent);
   profileService = inject(ProfileService);
   toastService = inject(ToastNotificationService);
   vcf = inject(ViewContainerRef);
+  searchInputValue = signal('');
 
   searchInput = viewChild.required<ElementRef<HTMLElement>>('searchInput');
 
@@ -136,7 +156,7 @@ export default class SearchComboboxDialogComponent {
     this.closeDialogOutput.emit(true);
   }
 
-  async onContinue() {
+  onContinue() {
     this.profileService
       .clearRecentSearch(this.recentSearch())
       .subscribe((response) => {
@@ -150,5 +170,12 @@ export default class SearchComboboxDialogComponent {
         }
       });
     this.clearSearchDialogVisible.set(false);
+  }
+
+  onSearchEnter() {
+    if (this.searchInputValue())
+      this.router.navigateByUrl(
+        `search/result?keyword=${this.searchInputValue()}`,
+      );
   }
 }

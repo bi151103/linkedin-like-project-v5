@@ -55,7 +55,6 @@ type DotItem = { isActive: boolean; clickAction: () => void };
   ],
   template: `
     <app-header
-      [messageNotifications]="messageNotifications()?.data"
       (onShowSearchComboboxDialog)="showSearchComboboxDialog()"
     ></app-header>
     <ng-container>
@@ -230,10 +229,7 @@ type DotItem = { isActive: boolean; clickAction: () => void };
         }
       </section>
     </ng-container>
-    <app-footer
-      [generalNotifications]="generalNotifications()?.data"
-      [networkNotifications]="networkNotifications()?.data"
-    ></app-footer>
+    <app-footer></app-footer>
     <div appOverlay>
       <app-dialog
         [isVisible]="searchDialogVisible()"
@@ -319,9 +315,6 @@ export class ProfilePage implements OnDestroy {
   experiences = signal<ExperienceData[]>([]);
   connectionCount = signal<number>(0);
   recentCompanyExp = signal('');
-  messageNotifications = signal<Nullable<MessageNotificationResponse>>(null);
-  networkNotifications = signal<Nullable<NetworkNotificationResponse>>(null);
-  generalNotifications = signal<Nullable<GeneralNotificationResponse>>(null);
   aboutData = signal<string>('');
   features = signal<Feature[]>([]);
   dotsList = computed<DotItem[]>(() => {
@@ -420,18 +413,6 @@ export class ProfilePage implements OnDestroy {
 
     this.profileService.getConnections().subscribe((data) => {
       this.connectionCount.set(data.count);
-    });
-
-    this.profileService.getMessageNotifications().subscribe((data) => {
-      this.messageNotifications.set(data);
-    });
-
-    this.profileService.getNetworkNotifications().subscribe((data) => {
-      this.networkNotifications.set(data);
-    });
-
-    this.profileService.getGeneralNotifications().subscribe((data) => {
-      this.generalNotifications.set(data);
     });
 
     this.profileService.getAboutData().subscribe((data) => {

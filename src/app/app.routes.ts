@@ -4,12 +4,18 @@ import { ProfilePage } from './pages/profile/profile.page';
 import EditProfilePage from './pages/edit-profile/edit-profile.page';
 import EditAboutPage from './pages/edit-about/edit-about.page';
 import AddFeaturedPage from './pages/add-feature/add-feature.page';
+import SearchResultPage from './pages/search-result/search-result.page';
 
 export const routes: Routes = [
   {
     path: '',
     component: ProfilePage,
     title: 'Profile | LinkedIn',
+  },
+  {
+    path: 'search/result',
+    component: SearchResultPage,
+    title: 'Search | LinkedIn',
   },
   {
     path: 'edit-profile',
