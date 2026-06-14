@@ -16,9 +16,18 @@ import { SvgIconComponent } from 'angular-svg-icon';
 import OverlayDirective from '../overlay/overlay.component';
 import IconButtonComponent from '../icon-button/icon-button.component';
 import ToastNotificationService from '../../services/toast-notification.service';
-import { Observable } from 'rxjs';
+import {
+  debounce,
+  debounceTime,
+  defer,
+  fromEvent,
+  map,
+  Observable,
+  of,
+} from 'rxjs';
 import TwMergePipe from '../../pipes/tw-merge.pipe';
 import { Router } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-search-combobox-dialog',
@@ -28,6 +37,7 @@ import { Router } from '@angular/router';
     DialogComponent,
     IconButtonComponent,
     TwMergePipe,
+    AsyncPipe,
   ],
   template: `
     <ng-container>
@@ -46,12 +56,11 @@ import { Router } from '@angular/router';
         </button>
         <input
           #searchInput
-          (input)="searchInputValue.set(searchInput.value)"
+          (input)="onSearchInput()"
           (keydown.enter)="onSearchEnter()"
           [value]="searchInputValue()"
           placeholder="Search"
           class="pl-20px pr-10px text-medium text-emphasis-tx basis-[calc(100%-100px)] rounded-[2px] pt-[4px] font-bold focus:outline-2"
-          type="search"
         />
         <button
           appIconButton
@@ -64,36 +73,66 @@ import { Router } from '@angular/router';
           (click)="searchInputValue.set('')"
         ></button>
       </div>
-      <div class="p-15px flex justify-between">
-        <h3 class="text-emphasis-tx font-medium">Recent search</h3>
-        @if (recentSearch() && recentSearch().length > 0) {
-          <button (click)="clearSearchDialogVisible.set(true)" class="px-10px">
-            Clear
-          </button>
-        }
-      </div>
-      <ul class="mt-10px">
-        @for (item of recentSearch().slice(0, 5); track item) {
-          <li
-            class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
-          >
-            <svg-icon
-              src="assets/icons/time-01.svg"
-              class="mx-[32px]"
-            ></svg-icon>
-            <span class="text-medium w-full truncate">{{ item }}</span>
-          </li>
-        }
-      </ul>
-      @if (!recentSearch() || (recentSearch() && recentSearch().length === 0)) {
-        <div class="py-20px m-auto max-h-[100px] w-full text-center">
-          <img
-            src="assets/images/icons8-empty-100.png"
-            class="w-md-img h-md-img"
-          />
-          <p class="text-medium-bold mt-5px text-3xl">Nothing here yet</p>
+      <!-- <ng-container>
+        <div class="p-15px flex justify-between">
+          <h3 class="text-emphasis-tx font-medium">Recent search</h3>
+          @if (recentSearch() && recentSearch().length > 0) {
+            <button
+              (click)="clearSearchDialogVisible.set(true)"
+              class="px-10px"
+            >
+              Clear
+            </button>
+          }
         </div>
-      }
+        <ul class="mt-10px">
+          @for (item of recentSearch().slice(0, 5); track item) {
+            <li
+              class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+            >
+              <svg-icon
+                src="assets/icons/time-01.svg"
+                class="mx-[32px]"
+              ></svg-icon>
+              <span class="text-medium w-full truncate">{{ item }}</span>
+            </li>
+          }
+        </ul>
+        @if (
+          !recentSearch() || (recentSearch() && recentSearch().length === 0)
+        ) {
+          <div class="py-20px m-auto max-h-[100px] w-full text-center">
+            <img
+              src="assets/images/icons8-empty-100.png"
+              class="w-md-img h-md-img"
+            />
+            <p class="text-medium-bold mt-5px text-3xl">Nothing here yet</p>
+          </div>
+        }
+      </ng-container> -->
+      <ng-container>
+        <ul class="mt-10px">
+          @for (
+            recentSearchItem of (recentResultChangeFromInput$ | async)?.slice(
+              0,
+              3
+            );
+            track recentSearchItem
+          ) {
+            <li
+              class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+            >
+              <svg-icon
+                src="assets/icons/icons8-search-100.svg"
+                class="mx-[32px]"
+              ></svg-icon>
+              <span class="text-medium w-full truncate">{{
+                recentSearchItem
+              }}</span>
+            </li>
+          }
+        </ul>
+      </ng-container>
     </ng-container>
     <div appOverlay [hasBackdrop]="true">
       <app-dialog
@@ -133,12 +172,15 @@ export default class SearchComboboxDialogComponent {
   vcf = inject(ViewContainerRef);
   searchInputValue = signal('');
 
-  searchInput = viewChild.required<ElementRef<HTMLElement>>('searchInput');
+  searchInput = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
   closeDialogOutput = output<boolean>();
 
   recentSearch = signal<string[]>([]);
   clearSearchDialogVisible = signal(false);
+
+  searchChange$?: Observable<Event>;
+  recentResultChangeFromInput$?: Observable<string[]>;
 
   constructor() {
     effect(() => {
@@ -177,5 +219,25 @@ export default class SearchComboboxDialogComponent {
       this.router.navigateByUrl(
         `search/result?keyword=${this.searchInputValue()}`,
       );
+  }
+
+  onSearchInput() {
+    this.searchInputValue.set(this.searchInput().nativeElement.value);
+    this.searchChange$?.subscribe((e) => {});
+  }
+
+  ngOnInit() {
+    this.searchChange$ = fromEvent(
+      this.searchInput().nativeElement,
+      'input',
+    ).pipe(debounceTime(300));
+
+    this.recentResultChangeFromInput$ = this.searchChange$.pipe(
+      map((e) =>
+        this.recentSearch().filter((v) =>
+          v.startsWith((e.target as HTMLInputElement).value),
+        ),
+      ),
+    );
   }
 }
