@@ -138,7 +138,9 @@ type DotItem = { isActive: boolean; clickAction: () => void };
           }
         </div>
         @if (aboutData()) {
-          <p class="mt-10px">{{ aboutData() }}</p>
+          <p class="mt-10px wrap-break-word whitespace-pre-wrap">
+            {{ aboutData() }}
+          </p>
         } @else {
           <button appPrimaryButton class="mt-10px" routerLink="edit-about">
             Add summary
@@ -215,10 +217,10 @@ type DotItem = { isActive: boolean; clickAction: () => void };
           </div>
           <div
             class="right-15px bottom-10px absolute flex items-center font-medium"
+            routerLink="/edit-featured"
           >
             See all
             <button
-              routerLink="/edit-featured"
               appIconButton
               btnType="back"
               iconSize="sm-img"

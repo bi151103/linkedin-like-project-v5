@@ -81,11 +81,14 @@ import ToastNotificationService from '../../services/toast-notification.service'
               class="h-[2rem] w-[2rem] align-middle"
               type="checkbox"
               name="educationShow"
-              (change)="form.isDirty.set(true)"
-              [checked]="userInfo()?.showEducation"
+              [checked]="checkboxState()"
+              (click)="onCheckboxClick()"
               #educationShow
             />
-            <label class="ml-10px text-emphasis-tx" for="education-check"
+            <label
+              class="ml-10px text-emphasis-tx"
+              for="education-check"
+              (click)="onCheckboxClick()"
               >Show education in my intro</label
             >
           </div>
@@ -137,10 +140,14 @@ export default class EditProfilePage {
       this.locationInput().isValid(),
   );
   saving = signal(false);
+  checkboxState = computed(() => {
+    console.log('here');
+    return this.userInfo()?.showEducation;
+  });
 
   vcf = inject(ViewContainerRef);
 
-  form = viewChild.required('form', { read: FormDirective });
+  formDirective = viewChild.required('form', { read: FormDirective });
   firstNameInput = viewChild.required<ProfileInputComponent>('firstName');
   lastNameInput = viewChild.required<ProfileInputComponent>('lastName');
   headlineInput = viewChild.required<ProfileInputComponent>('headline');
@@ -170,7 +177,7 @@ export default class EditProfilePage {
     this.userService.updateUserInfo(userInfo).subscribe((response) => {
       if (response) {
         this.saving.set(false);
-        this.form().isDirty.set(false);
+        this.formDirective().isDirty.set(false);
         this.userInfoService.changedSinceLastRetrieve.set(true);
 
         this.toastService.create(this.vcf, {
@@ -179,6 +186,19 @@ export default class EditProfilePage {
           closeBy: 'swiping',
         });
       }
+    });
+  }
+
+  onCheckboxClick() {
+    this.formDirective().isDirty.set(true);
+    this.userInfo.update((value) => {
+      if (value) {
+        return {
+          ...value,
+          showEducation: !value.showEducation,
+        };
+      }
+      return value;
     });
   }
 
