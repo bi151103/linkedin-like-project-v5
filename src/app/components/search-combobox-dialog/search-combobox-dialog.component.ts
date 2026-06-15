@@ -20,14 +20,46 @@ import {
   debounce,
   debounceTime,
   defer,
+  from,
   fromEvent,
   map,
+  merge,
   Observable,
   of,
+  reduce,
+  scan,
+  shareReplay,
+  switchAll,
+  switchMap,
+  tap,
 } from 'rxjs';
 import TwMergePipe from '../../pipes/tw-merge.pipe';
 import { Router } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
+import { Job } from '../../services/models/job';
+import { Group } from '../../services/models/group';
+import { Institution } from '../../services/models/institution';
+import { Person } from '../../services/models/person';
+import SearchService from '../../services/search.service';
+import { InstitutionResponse } from '../../services/models/institution-response';
+import { GroupResponse } from '../../services/models/group-response';
+import { JobResponse } from '../../services/models/job-response';
+import { PeopleResponse } from '../../services/models/people-response';
+import { CompanyResponse } from '../../services/models/company-response';
+import ProfileNamePipe from '../../pipes/profile-name.pipe';
+import RelationshipToConnectionPipe from '../../pipes/relationship-to-connection.pipe';
+
+export type SearchResType = 'pplRes' | 'insRes' | 'companyRes';
+export type SearchItem = {
+  type: SearchResType;
+  id: string;
+  primaryText: string;
+  secondaryText: string;
+  tertiaryText?: string;
+  companyLogoSrc?: string;
+  avatarUrl?: string;
+  educationLogoSrc?: string;
+};
 
 @Component({
   selector: 'app-search-combobox-dialog',
@@ -39,8 +71,11 @@ import { AsyncPipe } from '@angular/common';
     TwMergePipe,
     AsyncPipe,
   ],
+  providers: [ProfileNamePipe, RelationshipToConnectionPipe],
   template: `
     <ng-container>
+      @let recentSearch$ = recentResultChangeFromInput$ | async;
+      @let searchCombobox$ = searchComboboxResult$ | async;
       <div class="h-50px flex items-center">
         <button
           appIconButton
@@ -70,69 +105,135 @@ import { AsyncPipe } from '@angular/common';
             ['min-w-md-img w-md-img', searchInputValue() ? '' : 'hidden']
               | twMerge
           "
-          (click)="searchInputValue.set('')"
+          (click)="onClearSearch()"
         ></button>
       </div>
-      <!-- <ng-container>
-        <div class="p-15px flex justify-between">
-          <h3 class="text-emphasis-tx font-medium">Recent search</h3>
-          @if (recentSearch() && recentSearch().length > 0) {
-            <button
-              (click)="clearSearchDialogVisible.set(true)"
-              class="px-10px"
-            >
-              Clear
-            </button>
-          }
-        </div>
-        <ul class="mt-10px">
-          @for (item of recentSearch().slice(0, 5); track item) {
-            <li
-              class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
-            >
-              <svg-icon
-                src="assets/icons/time-01.svg"
-                class="mx-[32px]"
-              ></svg-icon>
-              <span class="text-medium w-full truncate">{{ item }}</span>
-            </li>
-          }
-        </ul>
-        @if (
-          !recentSearch() || (recentSearch() && recentSearch().length === 0)
-        ) {
-          <div class="py-20px m-auto max-h-[100px] w-full text-center">
-            <img
-              src="assets/images/icons8-empty-100.png"
-              class="w-md-img h-md-img"
-            />
-            <p class="text-medium-bold mt-5px text-3xl">Nothing here yet</p>
+      @if (recentSearch().length && !!!searchInputValue()) {
+        <ng-container>
+          <div class="p-15px flex justify-between">
+            <h3 class="text-emphasis-tx font-medium">Recent search</h3>
+            @if (recentSearch() && recentSearch().length > 0) {
+              <button
+                (click)="clearSearchDialogVisible.set(true)"
+                class="px-10px"
+              >
+                Clear
+              </button>
+            }
           </div>
-        }
-      </ng-container> -->
-      <ng-container>
-        <ul class="mt-10px">
-          @for (
-            recentSearchItem of (recentResultChangeFromInput$ | async)?.slice(
-              0,
-              3
-            );
-            track recentSearchItem
+          <ul class="mt-10px">
+            @for (
+              item of recentSearch().slice(
+                0,
+                _Math.min(5, recentSearch().length)
+              );
+              track item
+            ) {
+              <li
+                class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+              >
+                <svg-icon
+                  src="assets/icons/time-01.svg"
+                  class="mx-[32px]"
+                ></svg-icon>
+                <span class="text-medium w-full truncate">{{ item }}</span>
+              </li>
+            }
+          </ul>
+          @if (
+            !recentSearch() || (recentSearch() && recentSearch().length === 0)
           ) {
-            <li
-              class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
-            >
-              <svg-icon
-                src="assets/icons/icons8-search-100.svg"
-                class="mx-[32px]"
-              ></svg-icon>
-              <span class="text-medium w-full truncate">{{
-                recentSearchItem
-              }}</span>
-            </li>
+            <div class="py-20px m-auto max-h-[100px] w-full text-center">
+              <img
+                src="assets/images/icons8-empty-100.png"
+                class="w-md-img h-md-img"
+              />
+              <p class="text-medium-bold mt-5px text-3xl">Nothing here yet</p>
+            </div>
           }
-        </ul>
-      </ng-container>
+        </ng-container>
+      }
+      @if (searchInputValue()) {
+        <ng-container>
+          <ul class="mt-10px">
+            @for (recentSearchItem of recentSearch$; track recentSearchItem) {
+              @if ($index < _Math.min($count, 3)) {
+                <li
+                  class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+                >
+                  <svg-icon
+                    src="assets/icons/icons8-search-100.svg"
+                    class="mx-[32px]"
+                  ></svg-icon>
+                  <span class="text-medium w-full truncate">{{
+                    recentSearchItem
+                  }}</span>
+                </li>
+              }
+            }
+            @for (searchItem of searchCombobox$; track searchItem.id) {
+              @if (
+                $index <
+                _Math.min(
+                  $count,
+                  _Math.max(5, 8 - _Math.min(recentSearch$?.length ?? 0, 3))
+                )
+              ) {
+                <li
+                  class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+                >
+                  <div class="text-medium w-full truncate">
+                    @if (searchItem.type === 'companyRes') {
+                      @if (searchItem.companyLogoSrc) {
+                        <img
+                          [src]="searchItem.companyLogoSrc"
+                          class="mx-[32px] h-[32px] w-[32px]"
+                        />
+                      } @else {
+                        <img
+                          src="assets/images/icons8-company-100.png"
+                          class="mx-[32px] h-[32px] w-[32px]"
+                        />
+                      }
+                    } @else if (searchItem.type === 'pplRes') {
+                      @if (searchItem.avatarUrl) {
+                        <img
+                          [src]="searchItem.avatarUrl"
+                          class="mx-[32px] h-[32px] w-[32px]"
+                        />
+                      } @else {
+                        <img
+                          src="assets/images/icons8-profile-100.png"
+                          class="mx-[32px] h-[32px] w-[32px]"
+                        />
+                      }
+                    } @else {
+                      @if (searchItem.educationLogoSrc) {
+                        <img
+                          [src]="searchItem.educationLogoSrc"
+                          class="mx-[32px] h-[32px] w-[32px]"
+                        />
+                      } @else {
+                        <img
+                          src="assets/images/icons8-company-100.png"
+                          class="mx-[32px] h-[32px] w-[32px]"
+                        />
+                      }
+                    }
+                    <span class="text-medium text-emphasis-tx">{{
+                      searchItem.primaryText
+                    }}</span>
+                    <span class="text-small">
+                      {{ searchItem.secondaryText }} <span class="dot"></span>
+                      {{ searchItem.tertiaryText }}
+                    </span>
+                  </div>
+                </li>
+              }
+            }
+          </ul>
+        </ng-container>
+      }
     </ng-container>
     <div appOverlay [hasBackdrop]="true">
       <app-dialog
@@ -165,10 +266,14 @@ import { AsyncPipe } from '@angular/common';
   },
 })
 export default class SearchComboboxDialogComponent {
+  _Math = Math;
   router = inject(Router);
+  profileName = inject(ProfileNamePipe);
+  relationshipToConnection = inject(RelationshipToConnectionPipe);
   dialogComponent = inject(DialogComponent);
   profileService = inject(ProfileService);
   toastService = inject(ToastNotificationService);
+  searchService = inject(SearchService);
   vcf = inject(ViewContainerRef);
   searchInputValue = signal('');
 
@@ -180,7 +285,8 @@ export default class SearchComboboxDialogComponent {
   clearSearchDialogVisible = signal(false);
 
   searchChange$?: Observable<Event>;
-  recentResultChangeFromInput$?: Observable<string[]>;
+  recentResultChangeFromInput$: Observable<string[]> = of([]);
+  searchComboboxResult$: Observable<SearchItem[]> = of([]);
 
   constructor() {
     effect(() => {
@@ -223,21 +329,179 @@ export default class SearchComboboxDialogComponent {
 
   onSearchInput() {
     this.searchInputValue.set(this.searchInput().nativeElement.value);
-    this.searchChange$?.subscribe((e) => {});
+  }
+
+  onClearSearch() {
+    this.searchInput().nativeElement.dispatchEvent(new Event('input'));
+    this.searchInputValue.set('');
   }
 
   ngOnInit() {
     this.searchChange$ = fromEvent(
       this.searchInput().nativeElement,
       'input',
-    ).pipe(debounceTime(300));
+    ).pipe(debounceTime(500));
 
     this.recentResultChangeFromInput$ = this.searchChange$.pipe(
-      map((e) =>
-        this.recentSearch().filter((v) =>
-          v.startsWith((e.target as HTMLInputElement).value),
+      switchMap(() =>
+        of(
+          this.recentSearch().filter((v) =>
+            v.startsWith(this.searchInputValue()),
+          ),
         ),
       ),
+    );
+
+    this.searchComboboxResult$ = this.searchChange$.pipe(
+      switchMap(() =>
+        defer(() => {
+          return merge(
+            defer(() => {
+              if (this.searchInputValue()) {
+                return this.searchService
+                  .getPeople(this.searchInputValue())
+                  .pipe(
+                    map<
+                      PeopleResponse,
+                      { type: 'pplRes'; data: PeopleResponse }
+                    >((data) => {
+                      return {
+                        type: 'pplRes',
+                        data,
+                      };
+                    }),
+                  );
+              } else {
+                return of<{ type: 'pplRes'; data: PeopleResponse }>({
+                  type: 'pplRes',
+                  data: {
+                    count: 0,
+                    data: [],
+                  },
+                });
+              }
+            }),
+            defer(() => {
+              if (this.searchInputValue()) {
+                return this.searchService
+                  .getCompanies(this.searchInputValue())
+                  .pipe(
+                    map<
+                      CompanyResponse,
+                      { type: 'companyRes'; data: CompanyResponse }
+                    >((data) => {
+                      return {
+                        type: 'companyRes',
+                        data,
+                      };
+                    }),
+                  );
+              } else {
+                return of<{ type: 'companyRes'; data: CompanyResponse }>({
+                  type: 'companyRes',
+                  data: {
+                    count: 0,
+                    data: [],
+                  },
+                });
+              }
+            }),
+            defer(() => {
+              if (this.searchInputValue()) {
+                return this.searchService
+                  .getInstitutions(this.searchInputValue())
+                  .pipe(
+                    map<
+                      InstitutionResponse,
+                      { type: 'insRes'; data: InstitutionResponse }
+                    >((data) => {
+                      return {
+                        type: 'insRes',
+                        data,
+                      };
+                    }),
+                  );
+              } else {
+                return of<{ type: 'insRes'; data: InstitutionResponse }>({
+                  type: 'insRes',
+                  data: {
+                    count: 0,
+                    data: [],
+                  },
+                });
+              }
+            }),
+          );
+        }),
+      ),
+      map((e) => {
+        if (e.type === 'pplRes') {
+          return {
+            data: e.data.data.map<SearchItem>(
+              ({
+                firstName,
+                lastName,
+                id,
+                relationship,
+                headline,
+                avatarUrl,
+              }) => {
+                return {
+                  type: e.type,
+                  id,
+                  primaryText: this.profileName.transform({
+                    firstName,
+                    lastName,
+                  }),
+                  secondaryText:
+                    this.relationshipToConnection.transform(relationship),
+                  tertiaryText: headline,
+                  avatarUrl,
+                };
+              },
+            ),
+          };
+        } else if (e.type === 'companyRes') {
+          return {
+            data: e.data.data.map<SearchItem>(
+              ({ companyId, companyName, companyIndustry, companyLogoSrc }) => {
+                return {
+                  type: e.type,
+                  id: companyId,
+                  primaryText: companyName,
+                  secondaryText: 'Company',
+                  tertiaryText: companyIndustry,
+                  companyLogoSrc,
+                };
+              },
+            ),
+          };
+        } else {
+          return {
+            data: e.data.data.map<SearchItem>(
+              ({ id, educationName, educationLogoSrc }) => {
+                return {
+                  type: e.type,
+                  id,
+                  primaryText: educationName,
+                  secondaryText: 'School',
+                  tertiaryText: 'location',
+                  educationLogoSrc,
+                };
+              },
+            ),
+          };
+        }
+      }),
+      //I believe this logic to merge the search apis should be handled at the BE side as the FE side should not handle this kind of business stuff (it's not display-related logic) (as per brother Thanh and Dat). I've implemented it here just to practice with RxJS data streams and operators
+      scan((acc: SearchItem[], cur, index) => {
+        if (index % 3 === 0) {
+          acc = [...cur.data];
+        } else {
+          acc = [...acc, ...cur.data];
+        }
+        return acc;
+      }, []),
     );
   }
 }

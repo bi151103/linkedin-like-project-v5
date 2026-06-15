@@ -137,6 +137,7 @@ type DotItem = { isActive: boolean; clickAction: () => void };
           }
         </div>
         @if (aboutData()) {
+          <!-- wrap-break-word whitespace-pre-wrap: use this pair of class to preserve the newline character (backslash and n) as a new line in the UI and make long words wrap into a new line -->
           <p class="mt-10px wrap-break-word whitespace-pre-wrap">
             {{ aboutData() }}
           </p>

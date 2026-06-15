@@ -111,7 +111,7 @@ export default class SearchResultPage {
           case 'grRes':
             this.groups.set((data.data as GroupResponse).data);
             break;
-          case 'grRes':
+          case 'insRes':
             this.institution.set((data.data as InstitutionResponse).data);
             break;
           default:
