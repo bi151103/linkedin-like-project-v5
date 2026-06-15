@@ -130,7 +130,7 @@ import ProfileNamePipe from '../../pipes/profile-name.pipe';
           </ul>
         </div>
         <a
-          routerLink="people"
+          routerLink="search/result/people"
           class="border-separator-line hover:bg-primary-btn-hover-bg block w-full border-t bg-white text-center leading-[2.5]"
           >See all</a
         >
@@ -205,7 +205,7 @@ import ProfileNamePipe from '../../pipes/profile-name.pipe';
           </ul>
         </div>
         <a
-          routerLink="company"
+          routerLink="search/result/company"
           class="border-separator-line hover:bg-primary-btn-hover-bg block w-full border-t bg-white text-center leading-[2.5]"
           >See all</a
         >
