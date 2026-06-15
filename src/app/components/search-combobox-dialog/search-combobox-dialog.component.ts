@@ -315,6 +315,9 @@ export default class SearchComboboxDialogComponent {
         this.profileService.getRecentSearch().subscribe((data) => {
           this.recentSearch.set(data.data);
         });
+        if (this.searchInputValue()) {
+          this.searchInput().nativeElement.dispatchEvent(new Event('input'));
+        }
       }
     });
   }
@@ -366,7 +369,7 @@ export default class SearchComboboxDialogComponent {
       switchMap(() =>
         of(
           this.recentSearch().filter((v) =>
-            v.startsWith(this.searchInputValue()),
+            v.toLowerCase().startsWith(this.searchInputValue().toLowerCase()),
           ),
         ),
       ),
