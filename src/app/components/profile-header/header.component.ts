@@ -31,6 +31,7 @@ import ProfileService from '../../services/profile.service';
           name="search"
           class="pl-5px pr-10px text-medium pt-[4px] font-bold outline-none"
           placeholder="Search"
+          [value]="searchValue()"
         />
       </div>
       <div class="min-w-50px basis-50px h-3/5">
@@ -58,6 +59,7 @@ import ProfileService from '../../services/profile.service';
 })
 export default class HeaderComponent {
   profileService = inject(ProfileService);
+  searchValue = input('');
 
   onShowSearchComboboxDialog = output();
   messageNotifications = signal<Optional<MessageNotification[]>>([]);
