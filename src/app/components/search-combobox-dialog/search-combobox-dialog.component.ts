@@ -231,6 +231,19 @@ export type SearchItem = {
                 </li>
               }
             }
+            @if (recentSearch$?.length || searchCombobox$?.length) {
+              <li
+                class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+              >
+                <svg-icon
+                  src="assets/icons/icons8-search-100.svg"
+                  class="mx-[32px]"
+                ></svg-icon>
+                <span class="text-medium text-primary-bg w-full truncate"
+                  >See all result for '{{ searchInputValue() }}'</span
+                >
+              </li>
+            }
           </ul>
         </ng-container>
       }
