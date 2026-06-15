@@ -5,6 +5,7 @@ import {
   ElementRef,
   inject,
   input,
+  model,
   output,
   signal,
   viewChild,
@@ -294,7 +295,7 @@ export default class SearchComboboxDialogComponent {
   toastService = inject(ToastNotificationService);
   searchService = inject(SearchService);
   vcf = inject(ViewContainerRef);
-  searchInputValue = signal('');
+  searchInputValue = model('');
 
   searchInput = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 

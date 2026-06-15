@@ -217,7 +217,9 @@ import ProfileNamePipe from '../../pipes/profile-name.pipe';
         [isVisible]="searchDialogVisible()"
         (closeDialog)="searchDialogVisible.set(false)"
       >
-        <app-search-combobox-dialog></app-search-combobox-dialog>
+        <app-search-combobox-dialog
+          [searchInputValue]="params$ ? params$['keyword'] : ''"
+        ></app-search-combobox-dialog>
       </app-dialog>
     </div>
   `,
