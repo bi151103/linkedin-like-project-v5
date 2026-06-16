@@ -35,7 +35,7 @@ import {
   tap,
 } from 'rxjs';
 import TwMergePipe from '../../pipes/tw-merge.pipe';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { Job } from '../../services/models/job';
 import { Group } from '../../services/models/group';
@@ -71,6 +71,7 @@ export type SearchItem = {
     IconButtonComponent,
     TwMergePipe,
     AsyncPipe,
+    RouterLink,
   ],
   providers: [ProfileNamePipe, RelationshipToConnectionPipe],
   template: `
@@ -109,10 +110,10 @@ export type SearchItem = {
           (click)="onClearSearch()"
         ></button>
       </div>
-      @if (recentSearch().length && !!!searchInputValue()) {
+      @if (!!!searchInputValue()) {
         <ng-container>
           <div class="p-15px flex justify-between">
-            <h3 class="text-emphasis-tx font-medium">Recent search</h3>
+            <h3 class="text-emphasis-tx font-medium">Recent search(es)</h3>
             @if (recentSearch() && recentSearch().length > 0) {
               <button
                 (click)="clearSearchDialogVisible.set(true)"
@@ -132,6 +133,7 @@ export type SearchItem = {
             ) {
               <li
                 class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+                (click)="router.navigateByUrl('search/result?keyword=' + item)"
               >
                 <svg-icon
                   src="assets/icons/time-01.svg"
@@ -161,6 +163,11 @@ export type SearchItem = {
               @if ($index < _Math.min($count, 3)) {
                 <li
                   class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+                  (click)="
+                    router.navigateByUrl(
+                      'search/result?keyword=' + recentSearchItem
+                    )
+                  "
                 >
                   <svg-icon
                     src="assets/icons/icons8-search-100.svg"
@@ -182,6 +189,15 @@ export type SearchItem = {
               ) {
                 <li
                   class="border-separator-line py-8px pr-15px flex min-h-[56px] w-full items-center border-b"
+                  (click)="
+                    router.navigateByUrl(
+                      searchItem.type === 'pplRes'
+                        ? 'in/' + searchItem.id
+                        : searchItem.type === 'companyRes'
+                          ? 'company/' + searchItem.id
+                          : 'school/' + searchItem.id
+                    )
+                  "
                 >
                   <div class="text-medium w-full truncate">
                     @if (searchItem.type === 'companyRes') {
@@ -333,6 +349,7 @@ export default class SearchComboboxDialogComponent {
       .subscribe((response) => {
         if (response.status === 'success') {
           this.recentSearch.set([]);
+          console.log(this.recentSearch());
         } else {
           this.toastService.create(this.vcf, {
             type: 'error',
