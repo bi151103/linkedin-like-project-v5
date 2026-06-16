@@ -6,6 +6,7 @@ This project started as a simple HTML/CSS/JavaScript practice project and has gr
 
 The goal of this project is not only to clone the LinkedIn UI, but also to practice building production-like frontend features and reusable frontend architecture.
 
+
 ---
 
 ## Purpose of this project
