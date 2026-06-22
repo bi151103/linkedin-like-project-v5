@@ -71,7 +71,6 @@ export type SearchItem = {
     IconButtonComponent,
     TwMergePipe,
     AsyncPipe,
-    RouterLink,
   ],
   providers: [ProfileNamePipe, RelationshipToConnectionPipe],
   template: `
@@ -86,10 +85,10 @@ export type SearchItem = {
           addClass="min-w-md-img w-md-img"
           btnType="back"
         >
-          <img
+          <!-- <img
             src="assets/images/icons8-left-100.png"
             class="aspect-square w-3/5"
-          />
+          /> -->
         </button>
         <input
           #searchInput
@@ -264,7 +263,7 @@ export type SearchItem = {
                 class="mx-[32px]"
               ></svg-icon>
               <span class="text-medium text-primary-bg w-full truncate"
-                >See all result for '{{ searchInputValue() }}'</span
+                >See all results for '{{ searchInputValue() }}'</span
               >
             </li>
           </ul>

@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   OnInit,
@@ -21,6 +22,10 @@ import FormPageHeaderComponent from '../../components/form-page-header/form-page
 import FormDirective from '../../directives/form.directive';
 import UserService from '../../services/user.service';
 import ToastNotificationService from '../../services/toast-notification.service';
+import { Industry } from '../../services/models/industry';
+import { Country } from '../../services/models/country';
+import { Location } from '../../services/models/location';
+import { convertCompilerOptionsFromJson } from 'typescript';
 
 @Component({
   selector: 'app-edit-profile',
@@ -103,7 +108,8 @@ import ToastNotificationService from '../../services/toast-notification.service'
         ></app-profile-input>
         <app-profile-input
           type="country"
-          [inputValue]="userInfo()?.country ?? ''"
+          [inputValue]="userInfo()?.country"
+          (inputChange)="onInputChange($event)"
           [isRequired]="true"
           [clearable]="true"
           #country
@@ -111,7 +117,7 @@ import ToastNotificationService from '../../services/toast-notification.service'
         ></app-profile-input>
         <app-profile-input
           type="location"
-          [inputValue]="userInfo()?.location ?? ''"
+          [inputValue]="locationData()"
           [clearable]="true"
           #location
           (dirty)="form.isDirty.set(true)"
@@ -124,6 +130,7 @@ import ToastNotificationService from '../../services/toast-notification.service'
   },
 })
 export default class EditProfilePage {
+  _console = console;
   userInfoService = inject(UserInfoService);
   userService = inject(UserService);
   profileService = inject(ProfileService);
@@ -141,8 +148,10 @@ export default class EditProfilePage {
   );
   saving = signal(false);
   checkboxState = computed(() => {
-    console.log('here');
     return this.userInfo()?.showEducation;
+  });
+  locationData = computed(() => {
+    return [this.userInfo()?.country, this.userInfo()?.location];
   });
 
   vcf = inject(ViewContainerRef);
@@ -162,16 +171,19 @@ export default class EditProfilePage {
   async saveProfileChanges() {
     const userInfo: UserInfo = {
       id: this.userInfo()?.id ?? '',
-      firstName: this.firstNameInput().inputValue(),
-      lastName: this.lastNameInput().inputValue(),
-      headline: this.headlineInput().inputValue(),
+      firstName: this.firstNameInput().inputValue() as string,
+      lastName: this.lastNameInput().inputValue() as string,
+      headline: this.headlineInput().inputValue() as string,
       education: this.educationList().find(
         (item) => item.id === this.educationInput()?.selectedEducationId(),
       ),
       showEducation: this.educationShowInput()?.nativeElement.checked || false,
-      industry: this.industryInput().inputValue(),
-      country: this.countryInput().inputValue(),
-      location: this.locationInput().inputValue(),
+      industry: this.industryInput().inputValue() as Industry,
+      country: {
+        id: (this.countryInput().inputValue() as Country).id,
+        name: (this.countryInput().inputValue() as Country).name,
+      },
+      location: this.locationInput().inputValue() as Location,
     };
     this.saving.set(true);
     this.userService.updateUserInfo(userInfo).subscribe((response) => {
@@ -179,7 +191,6 @@ export default class EditProfilePage {
         this.saving.set(false);
         this.formDirective().isDirty.set(false);
         this.userInfoService.changedSinceLastRetrieve.set(true);
-
         this.toastService.create(this.vcf, {
           type: response.status === 'success' ? 'success' : 'error',
           message: response.message,
@@ -209,6 +220,17 @@ export default class EditProfilePage {
 
     this.profileService.getEducations().subscribe((data) => {
       this.educationList.set(data.data);
+    });
+  }
+
+  onInputChange(inputChangeV: unknown) {
+    this.userInfo.update((value) => {
+      if (!value) return value;
+      return {
+        ...value,
+        country: inputChangeV as Country,
+        location: '',
+      };
     });
   }
 }

@@ -117,22 +117,22 @@ export default class AddFeaturedPage implements OnInit, OnDestroy {
   async handleAddFeatured() {
     if (this.type() === 'add-featured-link') {
       this.addFeatureStoreService.linkInputValue.set(
-        this.featuredNameInput().inputValue(),
+        this.featuredNameInput().inputValue() as string,
       );
       this.router.navigate(['/add-featured'], {
         onSameUrlNavigation: 'reload',
       });
     } else {
       const createFeatureReq: CreateFeatureRequest = {
-        name: this.featuredNameInput().inputValue(),
-        description: this.descInput()?.inputValue(),
+        name: this.featuredNameInput().inputValue() as string,
+        description: this.descInput()?.inputValue() as string,
         type:
           this.type() === 'add-featured-image'
             ? 'image'
             : this.type() === 'add-featured-document'
               ? 'document'
               : 'link',
-        value: this.featuredNameInput().inputValue(),
+        value: this.featuredNameInput().inputValue() as string,
         file:
           this.type() === 'add-featured-image'
             ? this.addFeatureStoreService.imgInputFile()

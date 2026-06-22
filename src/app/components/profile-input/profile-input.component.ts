@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   input,
@@ -10,7 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Optional } from '../../models';
+import { Nullable, Optional } from '../../models';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CdkOverlayOrigin, CdkConnectedOverlay } from '@angular/cdk/overlay';
@@ -19,6 +20,12 @@ import UserInfoService from '../../services/user-info.service';
 import TwMergePipe from '../../pipes/tw-merge.pipe';
 import FloatingButtonInputComponent from '../../directives/floating-button-input.component';
 import FloatingInputLabelDirective from '../../directives/floating-input-label.directive';
+import OverlayDirective from '../overlay/overlay.component';
+import DialogComponent from '../dialog/dialog.component';
+import ComboboxSelectComponentDialog from '../combobox-select-dialog/combobox-select-dialog.component';
+import { Industry } from '../../services/models/industry';
+import { Country } from '../../services/models/country';
+import { Location } from '../../services/models/location';
 
 export type FieldType =
   | 'firstName'
@@ -45,6 +52,9 @@ export type TextBoxInputType = 'input' | 'textarea';
     TwMergePipe,
     FloatingButtonInputComponent,
     FloatingInputLabelDirective,
+    OverlayDirective,
+    DialogComponent,
+    ComboboxSelectComponentDialog,
   ],
   template: `
     <ng-container>
@@ -63,7 +73,8 @@ export type TextBoxInputType = 'input' | 'textarea';
         @if (textBoxType() === 'input') {
           <input
             [id]="type()"
-            [(ngModel)]="inputValue"
+            [ngModel]="inputPopulatedValue()"
+            (ngModelChange)="onInput($event)"
             #input
             autocomplete="off"
             type="text"
@@ -74,8 +85,7 @@ export type TextBoxInputType = 'input' | 'textarea';
               ] | twMerge
             "
             (blur)="lossFocus.set(true)"
-            (focus)="lossFocus.set(false)"
-            (input)="onInput()"
+            (focus)="onInputFocus()"
             [name]="type()"
             *appFloatingInputLabel="
               textConfigs().label;
@@ -88,7 +98,8 @@ export type TextBoxInputType = 'input' | 'textarea';
           <textarea
             rows="5"
             [id]="type()"
-            [(ngModel)]="inputValue"
+            [ngModel]="inputPopulatedValue()"
+            (ngModelChange)="onInput($event)"
             #input
             autocomplete="off"
             [class]="
@@ -98,8 +109,7 @@ export type TextBoxInputType = 'input' | 'textarea';
               ] | twMerge
             "
             (blur)="lossFocus.set(true)"
-            (focus)="lossFocus.set(false)"
-            (input)="onInput()"
+            (focus)="onInputFocus()"
             [name]="type()"
             *appFloatingInputLabel="
               textConfigs().label;
@@ -164,16 +174,54 @@ export type TextBoxInputType = 'input' | 'textarea';
         }}</span>
       }
     </ng-container>
+    @if (
+      type() === 'industry' || type() === 'country' || type() === 'location'
+    ) {
+      <div appOverlay>
+        <app-dialog [isVisible]="false">
+          <app-combobox-select-dialog
+            #comboboxSelectDialog
+            [inputType]="type()"
+            [(inputValue)]="inputValue"
+            (inputValueChange)="
+              inputChange.emit(inputValue()); _console.log(inputValue())
+            "
+            [inputPopulatedValue]="inputPopulatedValue()"
+          ></app-combobox-select-dialog>
+        </app-dialog>
+      </div>
+    }
   `,
   host: { class: 'block not-first:mt-10px' },
 })
 export default class ProfileInputComponent {
+  _console = console;
   textBoxType = input<TextBoxInputType>('input');
   userInfoService = inject(UserInfoService);
-  inputValue = model.required<string>();
+  inputValue = model<unknown>();
+  inputPopulatedValue = computed(() => {
+    switch (this.type()) {
+      case 'industry':
+        return this.inputValue() as Industry;
+      case 'country':
+        return (this.inputValue() as Nullable<Country>)?.name ?? '';
+      case 'location':
+        return (this.inputValue() as [Nullable<Country>, Location])[1] ?? '';
+      case 'firstName':
+        return this.inputValue() as string;
+      default:
+        return this.inputValue() as string;
+    }
+  });
+
   inputContainerEle =
     viewChild.required<ElementRef<HTMLElement>>('inputContainer');
-  inputEleRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
+  inputEleRef = viewChild.required<ElementRef<HTMLElement>>('input');
+  comboboxSelectDialog = viewChild('comboboxSelectDialog', {
+    read: ComboboxSelectComponentDialog,
+  });
+
+  inputChange = output<unknown>();
   type = input.required<FieldType>();
   isRequired = input(false);
   clearable = input<boolean>(false);
@@ -186,9 +234,17 @@ export default class ProfileInputComponent {
     () => !this.isRequired() || (this.isRequired() && !!this.inputValue()),
   );
   valid = output();
-  shouldFloatLabel = computed(
-    () => !!(this.inputValue() || (!this.lossFocus() && !this.inputValue())),
-  );
+  shouldFloatLabel = computed(() => {
+    if (this.type() === 'location')
+      return !!(
+        (this.inputValue() as [Nullable<Country>, Location])[1] ||
+        (!this.lossFocus() &&
+          !(this.inputValue() as [Nullable<Country>, Location])[1])
+      );
+    else {
+      return !!(this.inputValue() || (!this.lossFocus() && !this.inputValue()));
+    }
+  });
   shouldShowInputError = computed(
     () => this.isRequired() && this.lossFocus() && !this.inputValue(),
   );
@@ -227,6 +283,7 @@ export default class ProfileInputComponent {
 
   notifyChanges() {
     this.dirty.emit();
+    // this.inputChange.emit(this.inputValue());
     if (this.isValid()) {
       this.valid.emit();
     }
@@ -244,7 +301,8 @@ export default class ProfileInputComponent {
     this.notifyChanges();
   }
 
-  onInput() {
+  onInput(value: string) {
+    this.inputValue.set(value);
     this.notifyChanges();
   }
 
@@ -254,6 +312,11 @@ export default class ProfileInputComponent {
       this.inputValue.set(selected.institution.educationName);
       this.notifyChanges();
     }
+  }
+
+  onInputFocus() {
+    this.lossFocus.set(false);
+    this.comboboxSelectDialog()?.dialogComponent.isVisible.set(true);
   }
 
   constructor() {

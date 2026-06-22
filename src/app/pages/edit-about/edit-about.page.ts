@@ -63,7 +63,7 @@ export default class EditAboutPage {
 
   async saveAboutChanges() {
     const aboutData: About = {
-      data: this.aboutInput().inputValue(),
+      data: this.aboutInput().inputValue() as string,
     };
     this.saving.set(true);
     this.profileService.updateAboutData(aboutData).subscribe((response) => {

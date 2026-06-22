@@ -12,6 +12,11 @@ import { UpdateResponse } from './models/update-response';
 import { FeaturesResponse } from './models/feature-response';
 import { CreateFeatureRequest } from './models/create-feature-request';
 import { Observable } from 'rxjs';
+import { IndustryResponse } from './models/industry-response';
+import { CountryResponse } from './models/country-response';
+import { Country } from './models/country';
+import { CountryDetailResponse } from './models/country-detail-response';
+import { LocationResponse } from './models/location-response';
 
 @Injectable({ providedIn: 'root' })
 export default class ProfileService extends BaseService {
@@ -103,5 +108,40 @@ export default class ProfileService extends BaseService {
     }
 
     return this.http.post<UpdateResponse>(apiUrl, formData);
+  }
+
+  getIndustries(searchKey: string): Observable<IndustryResponse> {
+    const apiUrl = `${this.rootUrl}/industries`;
+    return this.http.get<IndustryResponse>(apiUrl, {
+      params: {
+        searchKey,
+      },
+    });
+  }
+
+  getCountries(searchKey: string): Observable<CountryResponse> {
+    const apiUrl = `${this.rootUrl}/countries`;
+    return this.http.get<CountryResponse>(apiUrl, {
+      params: {
+        searchKey,
+      },
+    });
+  }
+
+  getCountryDetail(id: string): Observable<CountryDetailResponse> {
+    const apiUrl = `${this.rootUrl}/countries/${id}`;
+    return this.http.get<CountryDetailResponse>(apiUrl);
+  }
+
+  getLocations(
+    countryId: string,
+    searchKey: string,
+  ): Observable<LocationResponse> {
+    const apiUrl = `${this.rootUrl}/countries/${countryId}/locations`;
+    return this.http.get<LocationResponse>(apiUrl, {
+      params: {
+        searchKey,
+      },
+    });
   }
 }

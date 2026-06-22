@@ -1,3 +1,5 @@
+import { Country } from './country';
+
 export interface Experience {
   id: string;
   position: string;
@@ -5,6 +7,7 @@ export interface Experience {
     start: string;
     end?: string;
   };
-  location: string;
+  country: Country;
   description?: string;
+  location: Location;
 }

@@ -1,4 +1,6 @@
+import { Country } from './country';
 import { Education } from './education';
+import { Location } from './location';
 
 export interface UserInfo {
   id: string;
@@ -8,6 +10,6 @@ export interface UserInfo {
   education?: Education;
   showEducation: boolean;
   industry: string;
-  country: string;
-  location: string;
+  country: Country;
+  location: Location;
 }

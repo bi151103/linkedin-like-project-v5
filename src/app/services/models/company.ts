@@ -1,3 +1,4 @@
+import { Country } from './country';
 import { Industry } from './industry';
 
 export interface Company {
@@ -5,4 +6,6 @@ export interface Company {
   companyName: string;
   companyLogoSrc?: string;
   companyIndustry: Industry;
+  companyCountry: Country;
+  companyLocation: Location;
 }

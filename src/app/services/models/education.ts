@@ -1,10 +1,8 @@
+import { Institution } from './institution';
+
 export interface Education {
   id: string;
-  institution: {
-    id: string;
-    educationName: string;
-    educationLogoSrc?: string;
-  };
+  institution: Institution;
   major: string;
   degreeType?: 'bachelor' | 'master';
   duration: {

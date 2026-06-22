@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import HeaderComponent from '../../components/profile-header/header.component';
 import DialogComponent from '../../components/dialog/dialog.component';
 import SearchComboboxDialogComponent from '../../components/search-combobox-dialog/search-combobox-dialog.component';
@@ -8,12 +9,17 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import SearchService from '../../services/search.service';
 import { Job } from '../../services/models/job';
 import {
+  defer,
+  distinct,
   forkJoin,
   map,
   merge,
   mergeAll,
   mergeMap,
+  of,
+  shareReplay,
   switchMap,
+  tap,
   toArray,
 } from 'rxjs';
 import { JobResponse } from '../../services/models/job-response';
@@ -37,17 +43,15 @@ import ProfileNamePipe from '../../pipes/profile-name.pipe';
     DialogComponent,
     SearchComboboxDialogComponent,
     FooterComponent,
-    AsyncPipe,
     RouterLink,
     ConvertRelativeDatePipe,
     ProfileNamePipe,
   ],
   template: `
     <ng-container>
-      @let params$ = route.queryParams | async;
       <app-header
         (onShowSearchComboboxDialog)="searchDialogVisible.set(true)"
-        [searchValue]="params$ ? params$['keyword'] : ''"
+        [searchValue]="searchInputValue()"
       ></app-header>
       @if (jobs().length) {
         <div class="mt-10px p-15px bg-white pr-0">
@@ -121,7 +125,7 @@ import ProfileNamePipe from '../../pipes/profile-name.pipe';
                       {{ person.headline }}
                     </p>
                     <span class="text-xs-small"
-                      >{{ person.location }}, {{ person.country }}</span
+                      >{{ person.location }}, {{ person.country.name }}</span
                     >
                   </div>
                 </a>
@@ -218,7 +222,7 @@ import ProfileNamePipe from '../../pipes/profile-name.pipe';
         (closeDialog)="searchDialogVisible.set(false)"
       >
         <app-search-combobox-dialog
-          [searchInputValue]="params$ ? params$['keyword'] : ''"
+          [(searchInputValue)]="searchInputValue"
         ></app-search-combobox-dialog>
       </app-dialog>
     </div>
@@ -237,6 +241,8 @@ export default class SearchResultPage {
   groups = signal<Group[]>([]);
   institutions = signal<Institution[]>([]);
   companies = signal<Company[]>([]);
+
+  searchInputValue = signal(this.route.snapshot.queryParams['keyword']);
 
   constructor() {
     this.route.queryParams

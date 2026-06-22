@@ -1,3 +1,4 @@
+import { Country } from './country';
 import { Relationship } from './relationship';
 
 export interface Person {
@@ -7,6 +8,6 @@ export interface Person {
   avatarUrl?: string;
   headline?: string;
   relationship: Relationship;
-  country: string;
-  location: string;
+  country: Country;
+  location: Location;
 }
